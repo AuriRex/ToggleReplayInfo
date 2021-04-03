@@ -8,10 +8,8 @@ namespace ToggleReplayInfo.Installers
     {
         public override void InstallBindings()
         {
-            Logger.log.Error("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
             if (IPA.Loader.PluginManager.GetPluginFromId("BeatSaberMarkupLanguage") != null)
             {
-                Logger.log.Error("BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB");
                 Container.BindInterfacesAndSelfTo<ModifierHost>().AsSingle();
                 Container.BindInterfacesAndSelfTo<MenuUIManager>().AsSingle();
             }
