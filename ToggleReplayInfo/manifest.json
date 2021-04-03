@@ -1,0 +1,14 @@
+﻿{
+  "$schema": "https://raw.githubusercontent.com/beat-saber-modding-group/BSIPA-MetadataFileSchema/master/Schema.json",
+  "id": "ToggleReplayInfo",
+  "name": "ToggleReplayInfo",
+  "author": "AuriRex",
+  "version": "0.0.1",
+  "description": "Lets you disable the replay text",
+  "gameVersion": "1.14.0",
+  "dependsOn": {
+    "BSIPA": "^4.1.6",
+    "SiraUtil": "^2.5.2",
+    "ScoreSaber": "^3.0.3"
+  }
+}
