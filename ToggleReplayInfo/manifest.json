@@ -3,12 +3,13 @@
   "id": "ToggleReplayInfo",
   "name": "ToggleReplayInfo",
   "author": "AuriRex",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Lets you disable the replay text",
-  "gameVersion": "1.14.0",
+  "gameVersion": "1.16.1",
   "dependsOn": {
     "BSIPA": "^4.1.6",
     "SiraUtil": "^2.5.2",
-    "ScoreSaber": "^3.0.3"
+    "ScoreSaber": "^3.0.3",
+    "BeatSaberMarkupLanguage": "^1.5.2"
   }
 }

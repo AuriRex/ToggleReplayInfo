@@ -2,8 +2,11 @@
 using ScoreSaber.Core.Data;
 using System;
 using System.Collections;
+using System.Threading.Tasks;
 using ToggleReplayInfo.Configuration;
 using ToggleReplayInfo.HarmonyPatches;
+using ToggleReplayInfo.HarmonyPatches.Patches;
+using ToggleReplayInfo.Models;
 using UnityEngine;
 using Zenject;
 
@@ -13,57 +16,90 @@ namespace ToggleReplayInfo.Manager
     {
         public const string SCORESABER_REPLAYTEXT_GAMEOBJECT_NAME = "InGameReplayUI/CustomUIText-ScoreSaber";
 
-        private PluginConfig _pluginConfig;
-
-        private Coroutine _coroutine;
-
-        public bool IsReplayPlaying
-        {
-            get
-            {
-                bool? value = ReplayPlayer.instance?.playbackEnabled;
-                if (value.HasValue) return value.Value;
-                return false;
-            }
-        }
+        private readonly PluginConfig _pluginConfig;
+        private readonly ScoreSaberStaticBlobManager _scoreSaberStaticBlobManager;
+        private readonly IPlatformUserModel _platformUserModel;
 
         [Inject]
-        public ReplayTextManager(PluginConfig pluginConfig)
+        public ReplayTextManager(PluginConfig pluginConfig, ScoreSaberStaticBlobManager scoreSaberStaticBlobManager, IPlatformUserModel platformUserModel)
         {
             _pluginConfig = pluginConfig;
+            _scoreSaberStaticBlobManager = scoreSaberStaticBlobManager;
+            _platformUserModel = platformUserModel;
         }
 
-        public void Initialize()
+        public async void Initialize()
         {
-            Score score = ReplayPlayer.instance?.currentScore;
+            bool fromLevelCompletedWatchReplayButton = _scoreSaberStaticBlobManager.IsFromLevelCompletedWatchButton;
+            _scoreSaberStaticBlobManager.OnGameSceneInitializing();
 
-            string playerId = score?.playerId;
+            if (!_pluginConfig.Enabled) return;
 
-            if (IsReplayPlaying && LocalPlayerInfoPatch.localPlayerInfo.playerId.Equals(score.playerId) && _pluginConfig.HideReplayInfo)
+            await Task.Delay(200);
+
+            // TODO: implement this later
+            if (fromLevelCompletedWatchReplayButton) return;
+
+            if (!_scoreSaberStaticBlobManager.IsInReplay())
             {
-                _coroutine = SharedCoroutineStarter.instance.StartCoroutine(DoAfter(.2f, () => {
-                    Logger.log.Debug("Deactivating the ScoreSaber Replay Text.");
-                    var go = GameObject.Find($"/{SCORESABER_REPLAYTEXT_GAMEOBJECT_NAME}");
-                    go?.SetActive(false);
-                }));
+                return;
+            }
+
+            Logger.log.Debug($"Replay is playing, PlayerName: {_scoreSaberStaticBlobManager.GetRawPlayerName()}");
+
+            UserInfo userInfo = await _platformUserModel.GetUserInfo();
+
+
+
+            ReplayMetaDataWrapper metaData = PatchScoreSaberLeaderboardView_InfoButton.CurrentMetaData;
+
+            if (metaData == null || !metaData.HasValue)
+            {
+                Logger.log.Debug($"MetaData is null or empty, cancelling!");
+                return;
+            }
+
+           
+
+            Logger.log.Debug($"UserInfo:\"{userInfo.platformUserId}\" - MetaData:\"{metaData.PlayerId}\"");
+
+            if(fromLevelCompletedWatchReplayButton || userInfo.platformUserId.Equals(metaData.PlayerId))
+            {
+                var go = GameObject.Find($"/{SCORESABER_REPLAYTEXT_GAMEOBJECT_NAME}");
+
+                if(go == null)
+                {
+                    Logger.log.Error($"The replay text gameObject \"/{SCORESABER_REPLAYTEXT_GAMEOBJECT_NAME}\" does not exist!");
+                    return;
+                }
+
+                if (_pluginConfig.HideReplayInfo)
+                {
+                    Logger.log.Debug("Deactivating the ScoreSaber replay text gameobject.");
+                    go.SetActive(false);
+                    return;
+                }
+
+                var parent = go.transform?.parent?.gameObject;
+
+                if (parent == null)
+                {
+                    Logger.log.Error("parent should not be null but it was anyways...");
+                    return;
+                }
+
+                Logger.log.Debug("Setting additional replay text values ...");
+
+                parent.transform.position = _pluginConfig.Position.ToVector3();
+
+                go.transform.localScale = go.transform.localScale * _pluginConfig.Scale;
+
             }
         }
 
         public void Dispose()
         {
-            if (_coroutine != null)
-            {
-                SharedCoroutineStarter.instance.StopCoroutine(_coroutine);
-            }
-        }
-
-        public static IEnumerator DoAfter(float time, Action action)
-        {
-            float start = Time.fixedTime;
-            while (start + time > Time.fixedTime)
-                yield return null;
-            action?.Invoke();
-            yield break;
+            
         }
     }
 }

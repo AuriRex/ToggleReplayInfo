@@ -1,5 +1,17 @@
 ﻿<horizontal horizontal-fit='PreferredSize' vertical-fit='PreferredSize' xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' xsi:schemaLocation='https://monkeymanboy.github.io/BSML-Docs/ https://raw.githubusercontent.com/monkeymanboy/BSML-Docs/gh-pages/BSMLSchema.xsd'>
   <vertical>
-    <toggle-setting text='Disable Replay Text' value='disable-replay-text' apply-on-change='true' hover-hint='Only works for your replays!'/>
+    <vertical>
+      <text text='This only affects your replays!' align='Center' color='red' />
+    </vertical>
+    <vertical>
+      <toggle-setting text='Enable' value='enable-mod' apply-on-change='true' hover-hint='Enables the features below.'/>
+    </vertical>
+    <vertical>
+      <toggle-setting id='disable-replay-text-component' text='Hide Replay Text' value='disable-replay-text' apply-on-change='true' hover-hint='Whether to hide the text altogether.' interactable='false'/>
+      <string-setting id='position-x-component' text='Position X' value='position-x' apply-on-change='true' hover-hint='- Left/Right +' interactable='false' />
+      <string-setting id='position-y-component' text='Position Y' value='position-y' apply-on-change='true' hover-hint='- Down/Up +' interactable='false' />
+      <string-setting id='position-z-component' text='Position Z' value='position-z' apply-on-change='true' hover-hint='- Front/Back +' interactable='false' />
+      <slider-setting id='scale-component' text='Scale' value='scale' apply-on-change='true' hover-hint='Scales the entire text.' min='0.2' max='3' increment='0.1' interactable='false' />
+    </vertical>
   </vertical>
 </horizontal>
