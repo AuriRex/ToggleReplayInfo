@@ -1,3 +1,4 @@
+
 # ToggleReplayInfo
 
 
@@ -8,4 +9,4 @@ You can toggle on/off the Mod ingame on the left side next to the Gameplay Modif
 
 ![_togglereplayinfo](https://user-images.githubusercontent.com/37329066/113483585-82816e80-94a4-11eb-9fed-7c1cda691d6c.png)
 
-![20210403173209_1](https://user-images.githubusercontent.com/37329066/113483268-d9864400-94a2-11eb-8603-810e0cb6f790.jpg)
+![image](https://user-images.githubusercontent.com/37329066/121253445-671e4f80-c8a9-11eb-98c5-c37c7bc1990d.png)
