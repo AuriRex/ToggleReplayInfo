@@ -36,6 +36,16 @@ namespace ToggleReplayInfo.Manager
 
         public void Initialize()
         {
+            if(!_scoreSaberTypeManager.IsReady)
+            {
+                Logger.log.Debug($"{nameof(ScoreSaberTypeManager)} is not ready, aborting initialisation of {nameof(ScoreSaberStaticBlobManager)}.");
+                return;
+            }
+            Init();
+        }
+
+        private void Init()
+        {
             _getReplayInstanceMI = _scoreSaberTypeManager.BigStaticThing.GetMethods(AnyBindingFlags).First(x => x.ReturnType.Equals(_scoreSaberTypeManager.ScoreSaberReplayContainer));
 
             if (!AllMembersPopulated<ScoreSaberStaticBlobManager>(MemberTypes.Field, this))

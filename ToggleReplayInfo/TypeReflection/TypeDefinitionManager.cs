@@ -106,6 +106,23 @@ namespace ToggleReplayInfo.TypeReflection
             return ret;
         }
 
+        public string GetUnresolvedTypes(Assembly assembly)
+        {
+            if (TypeDefinitions.TryGetValue(assembly, out List<TypeDefinition> typeDefs))
+            {
+                string outText = string.Empty;
+                foreach(TypeDefinition typeDefinition in typeDefs)
+                {
+                    if(typeDefinition.Type == null)
+                    {
+                        outText += $"'{typeDefinition.DefinitionName}', ";
+                    }
+                }
+                return outText.Substring(0, outText.Length - 2);
+            }
+            return "None";
+        }
+
         public void Cleanup()
         {
             _membersForType.Clear();
@@ -126,6 +143,18 @@ namespace ToggleReplayInfo.TypeReflection
             public bool? IsAbstractType { get; private set; }
             public bool? IsSealedType { get; private set; }
             public MemberVisibility TypeVisibility { get; private set; }
+
+            public string SpecialDebug { get; set; } = string.Empty;
+
+            internal void SpecialDebugLog(Type type, string msg)
+            {
+                if (type == null) return;
+                if (string.IsNullOrEmpty(SpecialDebug)) return;
+                if (type.Name.Equals(SpecialDebug))
+                {
+                    Logger.log.Notice(msg);
+                }
+            }
 
             public TypeDefinition(MemberVisibility visibility = MemberVisibility.Any, bool? isStatic = null, bool? isAbstract = null, bool? isSealed = null, string definitionName = "UnnamedType")
             {
@@ -173,13 +202,14 @@ namespace ToggleReplayInfo.TypeReflection
 
             public static bool VisibilityMatches(MemberVisibility visibility, PropertyInfo propertyInfo)
             {
+                if (propertyInfo.GetMethod == null) return false;
                 return VisibilityMatches(visibility, propertyInfo.GetMethod);
             }
 
             public static bool VisibilityMatches(MemberVisibility visibility, MethodInfo methodInfo)
             {
                 if (visibility == MemberVisibility.Any) return true;
-
+                
                 if (methodInfo.IsPublic && visibility == MemberVisibility.Public) return true;
                 if (methodInfo.IsPrivate && visibility == MemberVisibility.Private) return true;
                 if (methodInfo.IsAssembly && visibility == MemberVisibility.Assembly) return true;
@@ -192,7 +222,9 @@ namespace ToggleReplayInfo.TypeReflection
             {
                 definitionMapping = null;
                 outType = null;
+                SpecialDebugLog(type, $"Resolve() called for type '{SpecialDebug}' on definition '{this.DefinitionName}'.");
                 if (!ResolveRequirements()) return false;
+                SpecialDebugLog(type, $"All Required Types have been resolved for type '{SpecialDebug}' on definition '{this.DefinitionName}'.");
 
                 List<DefinitionInfo> definitions = new List<DefinitionInfo>(Definitions.ToArray());
 
@@ -201,6 +233,8 @@ namespace ToggleReplayInfo.TypeReflection
                 DefinitionInfo matchingDefInfo;
                 foreach (MemberInfo memberInfo in members)
                 {
+                    SpecialDebugLog(type, $"Testing Member: '{memberInfo.Name}' with type '{Utilities.GetMemberType(memberInfo)?.Name}' Memberinfo:'{MemberInfoTypeFromMemberInfo(memberInfo)}'.");
+
                     matchingDefInfo = null;
                     foreach (DefinitionInfo definitionInfo in definitions)
                     {
@@ -214,14 +248,20 @@ namespace ToggleReplayInfo.TypeReflection
                     {
                         definitions.Remove(matchingDefInfo);
                         defToMember.Add(matchingDefInfo, memberInfo);
+                        SpecialDebugLog(type, $"Member '{memberInfo.Name}' with type '{Utilities.GetMemberType(memberInfo)?.Name}' matched - {definitions.Count} remaining definitions - for type '{SpecialDebug}' on definition '{this.DefinitionName}'.");
                     }
                 }
+                foreach (DefinitionInfo definitionInfo in definitions)
+                {
+                    SpecialDebugLog(type, $"Unresolved Definition: MemberType:'{definitionInfo.MemberInfo}', Type:'{definitionInfo.MemberType}', IsStatic:'{definitionInfo.IsStatic}', Visibility:'{ definitionInfo.Visibility}'");
+                }
 
-                if(defToMember.Count == Definitions.Count)
+                if (defToMember.Count == Definitions.Count)
                 {
                     // All definitions matched so far
+                    SpecialDebugLog(type, $"All member defenitions have been met so far for type '{SpecialDebug}' on definition '{this.DefinitionName}'.");
 
-                    if(TypeVisibility != MemberVisibility.Any)
+                    if (TypeVisibility != MemberVisibility.Any)
                     {
                         if (type.IsPublic && TypeVisibility != MemberVisibility.Public) return false;
                         if (type.IsNotPublic && TypeVisibility == MemberVisibility.Public) return false;
@@ -436,7 +476,23 @@ namespace ToggleReplayInfo.TypeReflection
             {
                 Field,
                 Property,
-                Method
+                Method,
+                Error
+            }
+
+            public static MemberInfoType MemberInfoTypeFromMemberInfo(MemberInfo memberInfo)
+            {
+                switch (memberInfo)
+                {
+                    case FieldInfo fi:
+                        return MemberInfoType.Field;
+                    case PropertyInfo pi:
+                        return MemberInfoType.Property;
+                    case MethodInfo mi:
+                        return MemberInfoType.Method;
+                    default:
+                        return MemberInfoType.Error;
+                }
             }
 
             public class MethodDefinitionInfo : DefinitionInfo

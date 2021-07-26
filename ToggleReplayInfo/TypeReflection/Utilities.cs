@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Reflection;
 using ToggleReplayInfo.TypeReflection.Attributes;
 
@@ -38,6 +39,21 @@ namespace ToggleReplayInfo.TypeReflection
                 }
             }
             return true;
+        }
+
+        public static Type GetMemberType(MemberInfo memberInfo)
+        {
+            switch(memberInfo)
+            {
+                case FieldInfo fi:
+                    return fi.FieldType;
+                case PropertyInfo pi:
+                    return pi.GetMethod?.ReturnType ?? pi.SetMethod?.GetParameters()[0].ParameterType;
+                case MethodInfo mi:
+                    return mi.ReturnType;
+                default:
+                    return null;
+            }
         }
 
     }

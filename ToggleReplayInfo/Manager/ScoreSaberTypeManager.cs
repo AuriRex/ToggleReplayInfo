@@ -67,6 +67,7 @@ namespace ToggleReplayInfo.Manager
             {
                 Logger.log.Error($"{nameof(ScoreSaberTypeManager)} failed: {ex.Message}");
                 Logger.log.Error($"{ex.StackTrace}");
+                Logger.log.Error($"Unresolved Types: {_typeDefinitionManager.GetUnresolvedTypes(ScoreSaberAssembly)}");
             }
         }
 
@@ -128,13 +129,15 @@ namespace ToggleReplayInfo.Manager
                 .AddPropertyDefinition(typeof(string), MemberVisibility.Assembly) // ranked
                 .AddPropertyDefinition(typeof(string), MemberVisibility.Assembly) // uid
                 .AddPropertyDefinition(typeof(IList), MemberVisibility.Assembly) // scores (List<ReplayMetaData>)
-                .AddPropertyDefinition(typeof(string), MemberVisibility.Assembly) // playerScore
+                .AddPropertyDefinition(typeof(int), MemberVisibility.Assembly) // playerScore
                 .AddFieldDefinition(typeof(IDifficultyBeatmap), MemberVisibility.Assembly) // level
                 .AddFieldDefinition(typeof(string), MemberVisibility.Private)
                 .AddFieldDefinition(typeof(string), MemberVisibility.Private)
                 .AddFieldDefinition(typeof(IList), MemberVisibility.Private)
-                .AddFieldDefinition(typeof(string), MemberVisibility.Private)
+                .AddFieldDefinition(typeof(int), MemberVisibility.Private)
                 .BindToProperty(this, nameof(LeaderboardPageScoreContainer));
+
+            //LeaderboardPageScoreContainerDef.SpecialDebug = "#=zJipv3ZKBzC4E2ZkP8oAvVKNcwChQJ9Hjbw$q0pg=";
 
             var ScoreSaberLevelResultsViewControllerDef = new TypeDefinition(MemberVisibility.Assembly, isSealed: true, definitionName: nameof(ScoreSaberLevelResultsViewController))
                 .AddFieldDefinition(typeof(ResultsViewController), MemberVisibility.Private)
