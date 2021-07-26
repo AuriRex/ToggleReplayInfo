@@ -4,7 +4,7 @@
       <text text='This only affects your replays!' align='Center' color='red' />
     </vertical>
     <vertical>
-      <toggle-setting text='Enable' value='enable-mod' apply-on-change='true' hover-hint='Enables the features below.'/>
+      <toggle-setting text='Enabled' value='enable-mod' apply-on-change='true' hover-hint='Enables the features below.'/>
     </vertical>
     <vertical>
       <toggle-setting id='disable-replay-text-component' text='Hide Replay Text' value='disable-replay-text' apply-on-change='true' hover-hint='Whether to hide the text altogether.' interactable='false'/>
