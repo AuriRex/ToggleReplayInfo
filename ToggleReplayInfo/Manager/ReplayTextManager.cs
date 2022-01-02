@@ -94,6 +94,7 @@ namespace ToggleReplayInfo.Manager
 
                 go.transform.localScale = go.transform.localScale * _pluginConfig.Scale;
 
+                // TODO: Rotation
             }
         }
 

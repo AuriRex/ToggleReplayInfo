@@ -16,15 +16,10 @@ namespace ToggleReplayInfo
         public void InitWithConfig(IPALogger logger, Config conf, Zenjector zenjector)
         {
             Logger.log = logger;
-            zenjector.OnApp<TRICoreInstaller>().WithParameters(conf.Generated<Configuration.PluginConfig>());
-            zenjector.OnMenu<TRIMenuInstaller>();
-            zenjector.OnGame<TRIGameInstaller>().ShortCircuitForTutorial().ShortCircuitForCampaign().ShortCircuitForMultiplayer();
+
+            zenjector.Install<TRICoreInstaller>(Location.App, conf.Generated<Configuration.PluginConfig>());
+            zenjector.Install<TRIMenuInstaller>(Location.Menu);
+            zenjector.Install<TRIGameInstaller>(Location.Singleplayer);
         }
-
-        [OnEnable]
-        public void OnApplicationStart() { }
-
-        [OnDisable]
-        public void OnApplicationQuit() { }
     }
 }

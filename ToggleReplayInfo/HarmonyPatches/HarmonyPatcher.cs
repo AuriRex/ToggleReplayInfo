@@ -1,14 +1,12 @@
 ﻿using HarmonyLib;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Text;
 using System.Threading.Tasks;
 using ToggleReplayInfo.HarmonyPatches.Patches;
 using ToggleReplayInfo.Manager;
-using static ToggleReplayInfo.TypeReflection.Utilities;
 using Zenject;
+using static ToggleReplayInfo.TypeReflection.Utilities;
 
 namespace ToggleReplayInfo.HarmonyPatches
 {
@@ -80,7 +78,7 @@ namespace ToggleReplayInfo.HarmonyPatches
             if (IsPatched)
             {
                 Logger.log.Debug("Unpatching ...");
-                _harmony.UnpatchAll(Plugin.HARMONYID);
+                _harmony.UnpatchSelf();
                 IsPatched = false;
             }
         }
