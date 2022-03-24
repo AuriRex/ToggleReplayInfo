@@ -43,17 +43,13 @@ namespace ToggleReplayInfo.TypeReflection
 
         public static Type GetMemberType(MemberInfo memberInfo)
         {
-            switch(memberInfo)
+            return memberInfo switch
             {
-                case FieldInfo fi:
-                    return fi.FieldType;
-                case PropertyInfo pi:
-                    return pi.GetMethod?.ReturnType ?? pi.SetMethod?.GetParameters()[0].ParameterType;
-                case MethodInfo mi:
-                    return mi.ReturnType;
-                default:
-                    return null;
-            }
+                FieldInfo fi => fi.FieldType,
+                PropertyInfo pi => pi.GetMethod?.ReturnType ?? pi.SetMethod?.GetParameters()[0].ParameterType,
+                MethodInfo mi => mi.ReturnType,
+                _ => null,
+            };
         }
 
     }

@@ -64,6 +64,11 @@
       <HintPath>$(BeatSaberDir)\Beat Saber_Data\Managed\GameplayCore.dll</HintPath>
       <SpecificVersion>False</SpecificVersion>
     </Reference>
+    <Reference Include="Newtonsoft.Json, Version=8.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <Private>False</Private>
+      <HintPath>$(BeatSaberDir)\Beat Saber_Data\Managed\Newtonsoft.Json.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+    </Reference>
     <Reference Include="ScoreSaber, Version=3.0.3.0, Culture=neutral, processorArchitecture=MSIL">
       <Private>False</Private>
       <HintPath>$(BeatSaberDir)\Plugins\ScoreSaber.dll</HintPath>
@@ -138,20 +143,28 @@
   <ItemGroup>
     <Compile Include="HarmonyPatches\HarmonyPatcher.cs" />
     <Compile Include="HarmonyPatches\Patches\PatchLevelResultsReplayStartButtonClicker.cs" />
-    <Compile Include="HarmonyPatches\Patches\PatchScoreSaberLeaderboardView.cs" />
-    <Compile Include="Manager\ScoreSaberStaticBlobManager.cs" />
-    <Compile Include="Models\LeaderboardPageScoresContainerWrapper.cs" />
+    <Compile Include="HarmonyPatches\Patches\PatchScoreDetailView.cs" />
+    <Compile Include="Models\DifficultyLeaderboardDataWrapper.cs" />
+    <Compile Include="Models\LeaderboardPlayerInfoWrapper.cs" />
+    <Compile Include="Models\ReplayMetadataContainerWrapper.cs" />
     <Compile Include="TypeReflection\Attributes\IgnoreVerification.cs" />
     <Compile Include="Exceptions\ReplayTextInitializationException.cs" />
     <Compile Include="Exceptions\TypeNotResolvableException.cs" />
-    <Compile Include="HarmonyPatches\Patches\PatchReplayMetaData.cs" />
     <Compile Include="Installers\TRICoreInstaller.cs" />
     <Compile Include="Installers\TRIGameInstaller.cs" />
     <Compile Include="Installers\TRIMenuInstaller.cs" />
     <Compile Include="Manager\MenuUIManager.cs" />
     <Compile Include="Manager\ReplayTextManager.cs" />
     <Compile Include="TypeReflection\BindingHelperExtensions.cs" />
-    <Compile Include="TypeReflection\TypeDefinitionManager.cs" />
+    <Compile Include="TypeReflection\Core\MemberInfoType.cs" />
+    <Compile Include="TypeReflection\Core\MemberVisibility.cs" />
+    <Compile Include="TypeReflection\Definitions\DefinitionInfo.cs" />
+    <Compile Include="TypeReflection\Definitions\FieldDefinitionInfo.cs" />
+    <Compile Include="TypeReflection\Definitions\MethodDefinitionInfo.cs" />
+    <Compile Include="TypeReflection\Definitions\PropertyDefinitionInfo.cs" />
+    <Compile Include="TypeReflection\Definitions\RequirementDefinitionInfo.cs" />
+    <Compile Include="TypeReflection\Core\TypeDefinition.cs" />
+    <Compile Include="TypeReflection\Core\TypeDefinitionManager.cs" />
     <Compile Include="Manager\ScoreSaberTypeManager.cs" />
     <Compile Include="Models\ReplayMetaDataWrapper.cs" />
     <Compile Include="Plugin.cs" />
@@ -159,6 +172,7 @@
     <Compile Include="Configuration\PluginConfig.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TypeReflection\Utilities.cs" />
+    <Compile Include="TypeReflection\Wrappers\JsonPropertyWrapper.cs" />
     <Compile Include="TypeReflection\Wrappers\WrapperBase.cs" />
     <Compile Include="UI\ModifierHost.cs" />
   </ItemGroup>

@@ -30,7 +30,7 @@ namespace ToggleReplayInfo.HarmonyPatches
 
             if(!_scoreSaberTypeManager.IsReady)
             {
-                Logger.log.Debug($"Something went wrong because {_scoreSaberTypeManager.GetType().Name} is not ready, not patching!");
+                Logger.Log.Debug($"Something went wrong because {_scoreSaberTypeManager.GetType().Name} is not ready, not patching!");
                 return;
             }
 
@@ -41,10 +41,9 @@ namespace ToggleReplayInfo.HarmonyPatches
 
         private void PreHarmonyPatching()
         {
-            Logger.log.Debug("Preparing patches ...");
-            PatchReplayMetaData.ReplayMetaDataConstructorMB = _scoreSaberTypeManager.ReplayMetaData.GetConstructor(new Type[] { });
+            Logger.Log.Debug("Preparing patches ...");
 
-            PatchLevelResultsReplayStartButtonClicker.OnWatchReplayButtonClickedMB = _scoreSaberTypeManager.ScoreSaberLevelResultsViewController
+            PatchLevelResultsReplayStartButtonClicker.OnWatchReplayButtonClickedMB = _scoreSaberTypeManager.SSTypes.ScoreSaberLevelResultsViewController
                 .GetMethods(AnyBindingFlags).First(x => {
                     BeatSaberMarkupLanguage.Attributes.UIAction attribute = x.GetCustomAttribute(typeof(BeatSaberMarkupLanguage.Attributes.UIAction)) as BeatSaberMarkupLanguage.Attributes.UIAction;
                     if (attribute == null)
@@ -54,20 +53,20 @@ namespace ToggleReplayInfo.HarmonyPatches
                     return false;
                 });
 
-            string scoreSaberLeaderboardViewTypeName = "ScoreSaber.UI.Other.ScoreSaberLeaderboardView";
+            string ss_ScoreDetailViewTypeName = "ScoreSaber.UI.Elements.Leaderboard.ScoreDetailView";
 
-            PatchScoreSaberLeaderboardView.ReplayButtonClickedMB = _scoreSaberTypeManager.ScoreSaberAssembly
-                .GetType(scoreSaberLeaderboardViewTypeName).GetMethod("ReplayClicked", AnyBindingFlags);
+            var ss_ScoreDetailViewType = _scoreSaberTypeManager.ScoreSaberAssembly
+                .GetType(ss_ScoreDetailViewTypeName);
 
-            PatchScoreSaberLeaderboardView_InfoButton.InfoButtonClickedMB = _scoreSaberTypeManager.ScoreSaberAssembly
-                .GetType(scoreSaberLeaderboardViewTypeName).GetMethod("InfoButtonClicked", AnyBindingFlags);
+            PatchScoreDetailView.ReplayButtonClickedMB = ss_ScoreDetailViewType.GetMethod("ReplayClicked", AnyBindingFlags);
+            PatchScoreDetailView._currentScorePI = ss_ScoreDetailViewType.GetProperty("_currentScore", AnyBindingFlags);
         }
 
         private void Patch()
         {
             if (!IsPatched)
             {
-                Logger.log.Debug("Patching ...");
+                Logger.Log.Debug("Patching ...");
                 _harmony.PatchAll(Assembly.GetExecutingAssembly());
                 IsPatched = true;
             }
@@ -77,7 +76,7 @@ namespace ToggleReplayInfo.HarmonyPatches
         {
             if (IsPatched)
             {
-                Logger.log.Debug("Unpatching ...");
+                Logger.Log.Debug("Unpatching ...");
                 _harmony.UnpatchSelf();
                 IsPatched = false;
             }

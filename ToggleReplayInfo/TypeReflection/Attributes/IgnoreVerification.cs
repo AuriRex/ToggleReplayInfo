@@ -1,7 +1,9 @@
-﻿namespace ToggleReplayInfo.TypeReflection.Attributes
+﻿using System;
+
+namespace ToggleReplayInfo.TypeReflection.Attributes
 {
-    [System.AttributeUsage(System.AttributeTargets.Property | System.AttributeTargets.Field)]
-    public class IgnoreVerification : System.Attribute
+    [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field)]
+    public class IgnoreVerification : Attribute
     {
         
     }

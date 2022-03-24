@@ -1,4 +1,6 @@
-﻿using ToggleReplayInfo.Manager;
+﻿using ToggleReplayInfo.HarmonyPatches.Patches;
+using ToggleReplayInfo.Manager;
+using ToggleReplayInfo.Models;
 using Zenject;
 
 namespace ToggleReplayInfo.Installers
@@ -7,6 +9,7 @@ namespace ToggleReplayInfo.Installers
     {
         public override void InstallBindings()
         {
+            Container.BindInterfacesAndSelfTo<ReplayMetaDataWrapper>().FromInstance(PatchScoreDetailView.ReplayMetaData).AsSingle();
             Container.BindInterfacesAndSelfTo<ReplayTextManager>().AsSingle();
         } 
         

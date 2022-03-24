@@ -1,13 +1,13 @@
 ﻿using ToggleReplayInfo.Configuration;
 using ToggleReplayInfo.Manager;
-using ToggleReplayInfo.TypeReflection;
+using ToggleReplayInfo.TypeReflection.Core;
 using Zenject;
 
 namespace ToggleReplayInfo.Installers
 {
     internal class TRICoreInstaller : Installer<TRICoreInstaller>
     {
-        private PluginConfig _pluginConfig;
+        private readonly PluginConfig _pluginConfig;
 
         internal TRICoreInstaller(PluginConfig pluginConfig)
         {
@@ -20,7 +20,6 @@ namespace ToggleReplayInfo.Installers
             Container.Bind<TypeDefinitionManager>().ToSelf().AsSingle();
             Container.BindInterfacesAndSelfTo<ScoreSaberTypeManager>().AsSingle();
             Container.BindInterfacesAndSelfTo<HarmonyPatches.HarmonyPatcher>().AsSingle();
-            Container.BindInterfacesAndSelfTo<ScoreSaberStaticBlobManager>().AsSingle();
         }
     }
 }

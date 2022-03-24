@@ -1,10 +1,10 @@
 ﻿<horizontal horizontal-fit='PreferredSize' vertical-fit='PreferredSize' xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' xsi:schemaLocation='https://monkeymanboy.github.io/BSML-Docs/ https://raw.githubusercontent.com/monkeymanboy/BSML-Docs/gh-pages/BSMLSchema.xsd'>
   <vertical>
     <vertical>
-      <text text='This only affects your replays!' align='Center' color='red' />
+      <text text='~status-text' align='Center' color='red' />
     </vertical>
     <vertical>
-      <toggle-setting text='Enabled' value='enable-mod' apply-on-change='true' hover-hint='Enables the features below.'/>
+      <toggle-setting id='enable-mod-component' text='Enabled' value='enable-mod' apply-on-change='true' hover-hint='Enables the features below.'/>
     </vertical>
     <vertical>
       <toggle-setting id='disable-replay-text-component' text='Hide Replay Text' value='disable-replay-text' apply-on-change='true' hover-hint='Whether to hide the text altogether.' interactable='false'/>

@@ -1,16 +1,12 @@
 ﻿using System;
 using System.Collections;
 using System.Reflection;
-using System.Threading.Tasks;
 using ToggleReplayInfo.Exceptions;
-using ToggleReplayInfo.Models;
 using ToggleReplayInfo.TypeReflection;
-using UnityEngine;
-using Zenject;
-using static ToggleReplayInfo.TypeReflection.TypeDefinitionManager;
-using static ToggleReplayInfo.TypeReflection.Utilities;
-using static ToggleReplayInfo.TypeReflection.TypeDefinitionManager.TypeDefinition.DefinitionInfo;
+using ToggleReplayInfo.TypeReflection.Core;
 using UnityEngine.UI;
+using Zenject;
+using static ToggleReplayInfo.TypeReflection.Utilities;
 
 namespace ToggleReplayInfo.Manager
 {
@@ -20,17 +16,25 @@ namespace ToggleReplayInfo.Manager
 
         private bool _isReady = false;
 
+        public static bool HasErrorsOnInit { get; private set; } = false;
+        public bool HasErrorsOnInitInstance => HasErrorsOnInit;
+
+        public ScoreSaberTypes SSTypes = new ScoreSaberTypes();
+
         public Assembly ScoreSaberAssembly { get; private set; }
-        //public Type LegacyReplayPlayer { get; internal set; }
-        //public Type NewReplayPlayer { get; internal set; }
-        public Type ReplayMetaData { get; internal set; }
-        public Type ReplayCoreData { get; internal set; }
-        public Type ScoreSaberReplay { get; internal set; }
-        public Type ScoreSaberReplayContainer { get; internal set; }
-        public Type BigStaticThing { get; internal set; }
-        public Type LeaderboardPageScoreContainer { get; internal set; }
-        public Type ScoreSaberLevelResultsViewController { get; internal set; }
-        public Type LeaderboardInfoDownloader { get; internal set; }
+
+        public class ScoreSaberTypes
+        {
+            public Type ReplayMetaData { get; internal set; }
+            public Type LeaderboardPlayerInfo { get; internal set; }
+            public Type ReplayCoreData { get; internal set; }
+            public Type ScoreSaberReplay { get; internal set; }
+            public Type ScoreSaberReplayContainer { get; internal set; }
+            public Type ScoreSaberLeaderboardScoreEntry { get; internal set; }
+            public Type SS_DifficultyLeaderboardData { get; internal set; }
+            public Type SS_ReplayMetadataContainer { get; internal set; }
+            public Type ScoreSaberLevelResultsViewController { get; internal set; }
+        }
 
         public ScoreSaberTypeManager(TypeDefinitionManager scoreSaberTypeDefinitionManager)
         {
@@ -44,13 +48,12 @@ namespace ToggleReplayInfo.Manager
 
         public void Initialize()
         {
+
             ScoreSaberAssembly = Assembly.GetAssembly(typeof(ScoreSaber.Plugin));
 
             RegisterTypeDefinitions();
 
-            //LegacyReplayPlayer = ScoreSaberAssembly.GetType("ScoreSaber.LegacyReplayPlayer");
-
-            _typeDefinitionManager.SetLoggingAction(Logger.log.Debug);
+            _typeDefinitionManager.SetLoggingAction(Logger.Log.Debug);
 
             try
             {
@@ -58,136 +61,121 @@ namespace ToggleReplayInfo.Manager
                 while(!_typeDefinitionManager.ResolveAllTypes())
                 {
                     c++;
-                    if (c > 100) throw new ReplayTextInitializationException("Too many iterations for type resolution, aborting!");
+                    if (c > 20) throw new ReplayTextInitializationException("Too many iterations for type resolution, aborting!");
                 }
 
                 PostInitialize();
+
+                HasErrorsOnInit = false;
             }
             catch(Exception ex)
             {
-                Logger.log.Error($"{nameof(ScoreSaberTypeManager)} failed: {ex.Message}");
-                Logger.log.Error($"{ex.StackTrace}");
-                Logger.log.Error($"Unresolved Types: {_typeDefinitionManager.GetUnresolvedTypes(ScoreSaberAssembly)}");
+                Logger.Log.Error($"{nameof(ScoreSaberTypeManager)} failed: {ex.Message}");
+                Logger.Log.Error($"{ex.StackTrace}");
+                Logger.Log.Error($"Unresolved Types: {_typeDefinitionManager.GetUnresolvedTypes(ScoreSaberAssembly)}");
+                HasErrorsOnInit = true;
             }
+
+            Plugin.SSTM = this;
         }
 
         private void RegisterTypeDefinitions()
         {
-            /*var NewReplayPlayerDef = new TypeDefinition(definitionName: nameof(NewReplayPlayer))
-                .AddFieldDefinition(typeof(int), MemberVisibility.Private)
-                .AddFieldDefinition(typeof(MainCamera), MemberVisibility.Private, isReadonly: true)
-                .AddFieldDefinition(typeof(SaberManager), MemberVisibility.Private, isReadonly: true)
-                // KeyframeArray
-                .AddFieldDefinition(typeof(MainSettingsModelSO), MemberVisibility.Private, isReadonly: true)
-                .AddFieldDefinition(typeof(IReturnToMenuController), MemberVisibility.Private, isReadonly: true)
-                .AddFieldDefinition(typeof(Camera), MemberVisibility.Private)
-                .AddFieldDefinition(typeof(Camera), MemberVisibility.Private)
+            // Important
+            var LeaderboardPlayerInfoDef = new TypeDefinition(isSealed: true, definitionName: nameof(ScoreSaberTypes.LeaderboardPlayerInfo))
+                .AddMultipleSameFieldDefinitions(5, typeof(string), MemberVisibility.Private) // id, name, profilePicture, country, role
+                .AddFieldDefinition(typeof(int), MemberVisibility.Private) // permissions
+                .AddPropertyWrappersForAllCurrentlyAddedFields(MemberVisibility.Assembly)
+                .WithLimits(new TypeDefinition.MemberLimits { MaxProperties = 6 })
+                .BindToProperty(SSTypes, nameof(ScoreSaberTypes.LeaderboardPlayerInfo))
+                .Register(_typeDefinitionManager, ScoreSaberAssembly);
+
+            // Important
+            var ReplayMetaDataDef = new TypeDefinition(isSealed: true, definitionName: nameof(ScoreSaberTypes.ReplayMetaData))
+                .AddMultipleSamePropertyDefinitions(8, typeof(int), MemberVisibility.Assembly) // id, rank, baseScore, modifiedScore, badCuts, missedNotes, maxCombo, hmd
+                .AddMultipleSamePropertyDefinitions(3, typeof(double), MemberVisibility.Assembly) // pp, weight, multiplier
+                .AddMultipleSamePropertyDefinitions(2, typeof(bool), MemberVisibility.Assembly) // fullCombo, hasReplay
+                .AddPropertyDefinition(typeof(string), MemberVisibility.Assembly) // modifiers
+                .AddPropertyDefinition(typeof(DateTime), MemberVisibility.Assembly) // timeSet
+                .AddPropertyDefinition(LeaderboardPlayerInfoDef, MemberVisibility.Assembly)
+                .BindToProperty(SSTypes, nameof(ScoreSaberTypes.ReplayMetaData))
+                .Register(_typeDefinitionManager, ScoreSaberAssembly);
+
+            // Important
+            var SS_ReplayMetadataContainerDef = new TypeDefinition(definitionName: nameof(ScoreSaberTypes.SS_ReplayMetadataContainer))
+                .AddFieldDefinition(ReplayMetaDataDef, MemberVisibility.Private)
                 .AddFieldDefinition(typeof(bool), MemberVisibility.Private)
-                .AddFieldDefinition(typeof(Vector3), MemberVisibility.Private)
-                .BindToProperty(this, nameof(NewReplayPlayer));*/
+                // Something With Song Info
+                .AddFieldDefinition(typeof(double), MemberVisibility.Private)
+                .AddFieldDefinition(typeof(GameplayModifiers), MemberVisibility.Private)
+                .AddFieldDefinition(typeof(string), MemberVisibility.Private)
+                .WithLimits(new TypeDefinition.MemberLimits { MaxFields = 6 })
+                .BindToProperty(SSTypes, nameof(ScoreSaberTypes.SS_ReplayMetadataContainer))
+                .Register(_typeDefinitionManager, ScoreSaberAssembly);
 
-            var ReplayMetaDataDef = new TypeDefinition(definitionName: nameof(ReplayMetaData))
-                .AddMultipleSameFieldDefinitions(5, typeof(string), MemberVisibility.Private) // playerId, name, mods, timeset, country
-                .AddMultipleSameFieldDefinitions(7, typeof(int), MemberVisibility.Private) // rank, score, badCuts, missedNotes, maxCombo, fullCombo, hmd
-                .AddMultipleSameFieldDefinitions(2, typeof(double), MemberVisibility.Private) // pp, weight
-                .AddFieldDefinition(typeof(string), MemberVisibility.Public)
-                .AddFieldDefinition(typeof(bool), MemberVisibility.Public)
-                .AddFieldDefinition(typeof(double), MemberVisibility.Public)
-                .AddFieldDefinition(typeof(GameplayModifiers), MemberVisibility.Public)
-                .BindToProperty(this, nameof(ReplayMetaData));
+            var ScoreSaberLeaderboardScoreEntryDef = new TypeDefinition(isSealed: true, definitionName: nameof(ScoreSaberTypes.ScoreSaberLeaderboardScoreEntry))
+                .AddFieldDefinition(ReplayMetaDataDef, MemberVisibility.Private)
+                .AddFieldDefinition(typeof(bool), MemberVisibility.Private)
+                .AddFieldDefinition(typeof(double), MemberVisibility.Private)
+                .AddFieldDefinition(typeof(GameplayModifiers), MemberVisibility.Private)
+                .AddFieldDefinition(typeof(string), MemberVisibility.Private)
+                .WithLimits(new TypeDefinition.MemberLimits { MaxFields = 6})
+                .BindToProperty(SSTypes, nameof(ScoreSaberTypes.ScoreSaberLeaderboardScoreEntry))
+                .Register(_typeDefinitionManager, ScoreSaberAssembly);
 
-            var ReplayCoreDataDef = new TypeDefinition(definitionName: nameof(ReplayCoreData))
+            /*var ScoreSaberSongInfoDef = new TypeDefinition(definitionName: nameof(ScoreSaberSongInfo))
+                .BindToProperty(this, nameof(ScoreSaberSongInfo))
+                .Register(_typeDefinitionManager, ScoreSaberAssembly);*/
+
+            var ReplayCoreDataDef = new TypeDefinition(definitionName: nameof(ScoreSaberTypes.ReplayCoreData))
                 .AddMultipleSameFieldDefinitions(4, typeof(string), MemberVisibility.Assembly)
                 .AddFieldDefinition(typeof(int), MemberVisibility.Assembly)
                 .AddFieldDefinition(typeof(string[]), MemberVisibility.Assembly)
                 .AddMultipleSameFieldDefinitions(4, typeof(float), MemberVisibility.Assembly)
                 .AddFieldDefinition(typeof(bool), MemberVisibility.Assembly)
-                .BindToProperty(this, nameof(ReplayCoreData));
+                .BindToProperty(SSTypes, nameof(ScoreSaberTypes.ReplayCoreData))
+                .Register(_typeDefinitionManager, ScoreSaberAssembly);
 
-            var ScoreSaberReplayDef = new TypeDefinition(definitionName: nameof(ScoreSaberReplay))
+
+            var SS_DifficultyLeaderboardDataDef = new TypeDefinition(definitionName: nameof(ScoreSaberTypes.SS_DifficultyLeaderboardData))
+                .AddMultipleSameFieldDefinitions(2, typeof(int), MemberVisibility.Private)
+                .AddMultipleSameFieldDefinitions(2, typeof(string), MemberVisibility.Private)
+                .AddPropertyWrappersForAllCurrentlyAddedFields(MemberVisibility.Assembly)
+                .WithLimits(new TypeDefinition.MemberLimits { MaxFields = 4, MaxProperties = 4 })
+                .BindToProperty(SSTypes, nameof(ScoreSaberTypes.SS_DifficultyLeaderboardData))
+                .Register(_typeDefinitionManager, ScoreSaberAssembly);
+
+            var ScoreSaberReplayDef = new TypeDefinition(definitionName: nameof(ScoreSaberTypes.ScoreSaberReplay))
                 .AddFieldDefinition(ReplayCoreDataDef, MemberVisibility.Assembly)
                 .AddMultipleSameFieldDefinitions(7, typeof(IList), MemberVisibility.Assembly)
-                .BindToProperty(this, nameof(ScoreSaberReplay));
+                .BindToProperty(SSTypes, nameof(ScoreSaberTypes.ScoreSaberReplay))
+                .Register(_typeDefinitionManager, ScoreSaberAssembly);
 
-            var ScoreSaberReplayContainerDef = new TypeDefinition(definitionName: nameof(ScoreSaberReplayContainer))
-                .AddMultipleSameFieldDefinitions(2, typeof(string), MemberVisibility.Public)
-                .AddMultipleSameFieldDefinitions(2, typeof(bool), MemberVisibility.Public)
-                .AddFieldDefinition(typeof(byte[]), MemberVisibility.Public)
-                .AddFieldDefinition(ScoreSaberReplayDef, MemberVisibility.Public)
-                .AddFieldDefinition(typeof(IDifficultyBeatmap), MemberVisibility.Public)
-                .AddFieldDefinition(typeof(GameplayModifiers), MemberVisibility.Public)
-                .BindToProperty(this, nameof(ScoreSaberReplayContainer));
+            var ScoreSaberReplayContainerDef = new TypeDefinition(definitionName: nameof(ScoreSaberTypes.ScoreSaberReplayContainer))
+                .AddMultipleSameFieldDefinitions(2, typeof(string), MemberVisibility.Assembly)
+                .AddMultipleSameFieldDefinitions(2, typeof(bool), MemberVisibility.Assembly)
+                .AddFieldDefinition(typeof(byte[]), MemberVisibility.Assembly)
+                .AddFieldDefinition(ScoreSaberReplayDef, MemberVisibility.Assembly)
+                .AddFieldDefinition(typeof(IDifficultyBeatmap), MemberVisibility.Assembly)
+                .AddFieldDefinition(typeof(GameplayModifiers), MemberVisibility.Assembly)
+                .BindToProperty(SSTypes, nameof(ScoreSaberTypes.ScoreSaberReplayContainer))
+                .Register(_typeDefinitionManager, ScoreSaberAssembly);
 
-
-            var BigStaticThingDef = new TypeDefinition(MemberVisibility.Assembly, isStatic: true, definitionName: nameof(BigStaticThing))
-                .AddMultipleSameFieldDefinitions(3, typeof(bool), MemberVisibility.Private, isStatic: true)
-                .AddFieldDefinition(ScoreSaberReplayContainerDef, MemberVisibility.Private, isStatic: true)
-                .AddMethodDefinition(ScoreSaberReplayContainerDef, MemberVisibility.Assembly, isStatic: true)
-                .BindToProperty(this, nameof(BigStaticThing));
-
-            var LeaderboardPageScoreContainerDef = new TypeDefinition(MemberVisibility.Assembly, isSealed: true, definitionName: nameof(LeaderboardPageScoreContainer))
-                .AddPropertyDefinition(typeof(string), MemberVisibility.Assembly) // ranked
-                .AddPropertyDefinition(typeof(string), MemberVisibility.Assembly) // uid
-                .AddPropertyDefinition(typeof(IList), MemberVisibility.Assembly) // scores (List<ReplayMetaData>)
-                .AddPropertyDefinition(typeof(int), MemberVisibility.Assembly) // playerScore
-                .AddFieldDefinition(typeof(IDifficultyBeatmap), MemberVisibility.Assembly) // level
-                .AddFieldDefinition(typeof(string), MemberVisibility.Private)
-                .AddFieldDefinition(typeof(string), MemberVisibility.Private)
-                .AddFieldDefinition(typeof(IList), MemberVisibility.Private)
-                .AddFieldDefinition(typeof(int), MemberVisibility.Private)
-                .BindToProperty(this, nameof(LeaderboardPageScoreContainer));
-
-            //LeaderboardPageScoreContainerDef.SpecialDebug = "#=zJipv3ZKBzC4E2ZkP8oAvVKNcwChQJ9Hjbw$q0pg=";
-
-            var ScoreSaberLevelResultsViewControllerDef = new TypeDefinition(MemberVisibility.Assembly, isSealed: true, definitionName: nameof(ScoreSaberLevelResultsViewController))
+            var ScoreSaberLevelResultsViewControllerDef = new TypeDefinition(MemberVisibility.Assembly, isSealed: true, definitionName: nameof(ScoreSaberTypes.ScoreSaberLevelResultsViewController))
                 .AddFieldDefinition(typeof(ResultsViewController), MemberVisibility.Private)
                 .AddFieldDefinition(typeof(IDifficultyBeatmap), MemberVisibility.Private)
                 .AddFieldDefinition(typeof(LevelCompletionResults), MemberVisibility.Private)
                 .AddFieldDefinition(typeof(Button), MemberVisibility.Family, isReadonly: true)
-                .BindToProperty(this, nameof(ScoreSaberLevelResultsViewController));
+                .BindToProperty(SSTypes, nameof(ScoreSaberTypes.ScoreSaberLevelResultsViewController))
+                .Register(_typeDefinitionManager, ScoreSaberAssembly);
 
-            var LeaderboardInfoDownloaderDef = new TypeDefinition(MemberVisibility.Assembly, isSealed: true, definitionName: nameof(LeaderboardInfoDownloader))
-                .AddFieldDefinition(typeof(bool), MemberVisibility.Private)
-                .AddFieldDefinition(typeof(bool), MemberVisibility.Private)
-                .AddFieldDefinition(LeaderboardPageScoreContainerDef, MemberVisibility.Private)
-                .AddFieldDefinition(typeof(int), MemberVisibility.Private)
-                .AddFieldDefinition(typeof(string), MemberVisibility.Private)
-                .AddFieldDefinition(typeof(string), MemberVisibility.Private)
-                // ScoreSaberLeaderboardView
-                .AddFieldDefinition(typeof(bool), MemberVisibility.Private)
-                .BindToProperty(this, nameof(LeaderboardInfoDownloader));
-
-            _typeDefinitionManager.RegisterTypes(ScoreSaberAssembly, new TypeDefinition[] {
-                ReplayMetaDataDef,
-                ReplayCoreDataDef,
-                ScoreSaberReplayDef,
-                ScoreSaberReplayContainerDef,
-                BigStaticThingDef,
-                LeaderboardPageScoreContainerDef,
-                ScoreSaberLevelResultsViewControllerDef,
-                LeaderboardInfoDownloaderDef
-            });
         }
 
         private void PostInitialize()
         {
-            foreach(PropertyInfo propertyInfo in typeof(ScoreSaberTypeManager).GetProperties(TypeReflection.Utilities.AnyBindingFlags))
+            if (!AllMembersPopulated(MemberTypes.Property, SSTypes))
             {
-                if(propertyInfo.GetValue(this) == null)
-                {
-                    throw new ReplayTextInitializationException($"Couldn't find {propertyInfo.PropertyType} \"{propertyInfo.Name}\" from ScoreSaber!");
-                }
-            }
-
-            if (!ReplayMetaDataWrapper.HasBeenSetup())
-            {
-                ReplayMetaDataWrapper.InitialSetup(ReplayMetaData, LeaderboardPageScoreContainer);
-                LeaderboardPageScoresContainerWrapper.InitialSetup(LeaderboardPageScoreContainer, LeaderboardInfoDownloader);
-            }
-
-            if (!AllMembersPopulated(MemberTypes.Property, this))
-            {
-                throw new ReplayTextInitializationException($"Not all members in {nameof(ScoreSaberTypeManager)} were populated!");
+                throw new ReplayTextInitializationException($"Not all members in {nameof(ScoreSaberTypeManager.ScoreSaberTypes)} were populated!");
             }
 
             _isReady = true;

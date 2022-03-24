@@ -1,6 +1,4 @@
-﻿using ScoreSaber;
-using ScoreSaber.Core.Data;
-using System;
+﻿using System;
 using System.Collections;
 using System.Threading.Tasks;
 using ToggleReplayInfo.Configuration;
@@ -17,65 +15,46 @@ namespace ToggleReplayInfo.Manager
         public const string SCORESABER_REPLAYTEXT_GAMEOBJECT_NAME = "InGameReplayUI/CustomUIText-ScoreSaber";
 
         private readonly PluginConfig _pluginConfig;
-        private readonly ScoreSaberStaticBlobManager _scoreSaberStaticBlobManager;
+        private readonly ReplayMetaDataWrapper _replayMetaData;
         private readonly IPlatformUserModel _platformUserModel;
 
         [Inject]
-        public ReplayTextManager(PluginConfig pluginConfig, ScoreSaberStaticBlobManager scoreSaberStaticBlobManager, IPlatformUserModel platformUserModel)
+        public ReplayTextManager(PluginConfig pluginConfig, ReplayMetaDataWrapper replayMetaDataWrapper, IPlatformUserModel platformUserModel)
         {
             _pluginConfig = pluginConfig;
-            _scoreSaberStaticBlobManager = scoreSaberStaticBlobManager;
+            _replayMetaData = replayMetaDataWrapper;
             _platformUserModel = platformUserModel;
         }
 
         public async void Initialize()
         {
-            bool fromLevelCompletedWatchReplayButton = _scoreSaberStaticBlobManager.IsFromLevelCompletedWatchButton;
-            _scoreSaberStaticBlobManager.OnGameSceneInitializing();
-
             if (!_pluginConfig.Enabled) return;
 
+            if (_replayMetaData == null) return;
+
+            // Delay is to wait for the ScoreSaber Replay Text GameObject to get instantiated first
             await Task.Delay(200);
 
-            // TODO: implement this later
-            if (fromLevelCompletedWatchReplayButton) return;
-
-            if (!_scoreSaberStaticBlobManager.IsInReplay())
-            {
-                return;
-            }
-
-            Logger.log.Debug($"Replay is playing, PlayerName: {_scoreSaberStaticBlobManager.GetRawPlayerName()}");
+            Logger.Log.Debug($"Replay is playing, Player Id: {this._replayMetaData.LeaderboardPlayerInfo.Id}");
 
             UserInfo userInfo = await _platformUserModel.GetUserInfo();
 
 
+            Logger.Log.Debug($"UserInfo:\"{userInfo.platformUserId}\" - MetaData:\"{_replayMetaData.LeaderboardPlayerInfo.Id}\"");
 
-            ReplayMetaDataWrapper metaData = PatchScoreSaberLeaderboardView_InfoButton.CurrentMetaData;
-
-            if (metaData == null || !metaData.HasValue)
-            {
-                Logger.log.Debug($"MetaData is null or empty, cancelling!");
-                return;
-            }
-
-           
-
-            Logger.log.Debug($"UserInfo:\"{userInfo.platformUserId}\" - MetaData:\"{metaData.PlayerId}\"");
-
-            if(fromLevelCompletedWatchReplayButton || userInfo.platformUserId.Equals(metaData.PlayerId))
+            if(userInfo.platformUserId.Equals(_replayMetaData.LeaderboardPlayerInfo.Id))
             {
                 var go = GameObject.Find($"/{SCORESABER_REPLAYTEXT_GAMEOBJECT_NAME}");
 
                 if(go == null)
                 {
-                    Logger.log.Error($"The replay text gameObject \"/{SCORESABER_REPLAYTEXT_GAMEOBJECT_NAME}\" does not exist!");
+                    Logger.Log.Error($"The replay text gameObject \"/{SCORESABER_REPLAYTEXT_GAMEOBJECT_NAME}\" does not exist!");
                     return;
                 }
 
                 if (_pluginConfig.HideReplayInfo)
                 {
-                    Logger.log.Debug("Deactivating the ScoreSaber replay text gameobject.");
+                    Logger.Log.Info("Replay is from local player, hiding the ScoreSaber replay text gameobject.");
                     go.SetActive(false);
                     return;
                 }
@@ -84,11 +63,11 @@ namespace ToggleReplayInfo.Manager
 
                 if (parent == null)
                 {
-                    Logger.log.Error("parent should not be null but it was anyways...");
+                    Logger.Log.Error("parent should not be null but it was anyways...");
                     return;
                 }
 
-                Logger.log.Debug("Setting additional replay text values ...");
+                Logger.Log.Debug("Setting additional replay text values ...");
 
                 parent.transform.position = _pluginConfig.Position.ToVector3();
 

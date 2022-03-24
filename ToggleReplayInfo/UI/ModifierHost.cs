@@ -4,16 +4,42 @@ using System;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using ToggleReplayInfo.Configuration;
+using ToggleReplayInfo.Manager;
+using Zenject;
 
 namespace ToggleReplayInfo.UI
 {
-    public class ModifierHost : INotifyPropertyChanged
+    public class ModifierHost : IInitializable, INotifyPropertyChanged
     {
-        private PluginConfig _pluginConfig;
+        private readonly PluginConfig _pluginConfig;
+        private readonly ScoreSaberTypeManager _scoreSaberTypeManager;
+        private readonly IPlatformUserModel _platformUserModel;
 
-        public ModifierHost(PluginConfig pluginConfig)
+
+        public ModifierHost(PluginConfig pluginConfig, ScoreSaberTypeManager sstm, IPlatformUserModel platformUserModel)
         {
             _pluginConfig = pluginConfig;
+            _scoreSaberTypeManager = sstm;
+            _platformUserModel = platformUserModel;
+        }
+
+        public async void Initialize()
+        {
+            var userInfo = await _platformUserModel.GetUserInfo();
+
+            _statusText = $"This only affects <u>your</u> replays, <color=purple>{userInfo.userName}</color>!";
+        }
+
+        private string _statusText = "This only affects your replays!";
+        [UIValue("status-text")]
+        public string StatusText
+        {
+            get => _statusText;
+            set
+            {
+                _statusText = value;
+                NotifyPropertyChanged(nameof(StatusText));
+            }
         }
 
         [UIValue("enable-mod")]
@@ -51,7 +77,7 @@ namespace ToggleReplayInfo.UI
                     _pluginConfig.Position.X = val;
                     NotifyPropertyChanged(nameof(PositionX));
                 }
-                catch(Exception _) { }
+                catch(Exception) { }
             }
         }
 
@@ -67,7 +93,7 @@ namespace ToggleReplayInfo.UI
                     _pluginConfig.Position.Y = val;
                     NotifyPropertyChanged(nameof(PositionY));
                 }
-                catch (Exception _) { }
+                catch (Exception) { }
             }
         }
 
@@ -83,7 +109,7 @@ namespace ToggleReplayInfo.UI
                     _pluginConfig.Position.Z = val;
                     NotifyPropertyChanged(nameof(PositionZ));
                 }
-                catch (Exception _) { }
+                catch (Exception) { }
             }
         }
 
@@ -98,6 +124,8 @@ namespace ToggleReplayInfo.UI
             }
         }
 
+        [UIComponent("enable-mod-component")]
+        protected ToggleSetting enableModComponent = null!;
         [UIComponent("disable-replay-text-component")]
         protected ToggleSetting disableReplayTextSetting = null!;
         [UIComponent("position-x-component")]
@@ -112,7 +140,16 @@ namespace ToggleReplayInfo.UI
         [UIAction("#post-parse")]
         public void PostParse()
         {
-            OnPluginEnabledStateChanged(EnableMod);
+            if(_scoreSaberTypeManager.HasErrorsOnInitInstance)
+            {
+                enableModComponent.interactable = false;
+                OnPluginEnabledStateChanged(false);
+                StatusText = "MOD DISABLED!\nSomething went wrong on startup!";
+            }
+            else
+            {
+                OnPluginEnabledStateChanged(EnableMod);
+            }
         }
 
         private void OnPluginEnabledStateChanged(bool state)

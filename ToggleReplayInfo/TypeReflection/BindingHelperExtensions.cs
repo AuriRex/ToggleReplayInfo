@@ -1,16 +1,19 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
-using static ToggleReplayInfo.TypeReflection.TypeDefinitionManager;
+using ToggleReplayInfo.TypeReflection.Core;
 using static ToggleReplayInfo.TypeReflection.Utilities;
 
 namespace ToggleReplayInfo.TypeReflection
 {
     public static class BindingHelperExtensions
     {
+        public static TypeDefinition Register(this TypeDefinition self, TypeDefinitionManager manager, Assembly asm, Action<TypeDefinition> onTypeFound = null)
+        {
+            manager.RegisterType(asm, self, onTypeFound);
+
+            return self;
+        }
+
         public static TypeDefinition BindToField(this TypeDefinition self, object host, string fieldname)
         {
             Type hostType = host.GetType();

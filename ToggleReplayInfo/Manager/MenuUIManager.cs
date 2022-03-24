@@ -7,7 +7,7 @@ namespace ToggleReplayInfo.Manager
 {
     internal class MenuUIManager : IInitializable, IDisposable
     {
-        private ModifierHost _modifierHost;
+        private readonly ModifierHost _modifierHost;
 
         [Inject]
         public MenuUIManager(ModifierHost modifierHost)
