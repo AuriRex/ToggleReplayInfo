@@ -1,12 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
-using ToggleReplayInfo.Exceptions;
-using ToggleReplayInfo.TypeReflection;
-using UnityEngine;
 
 namespace ToggleReplayInfo.Models
 {
@@ -14,11 +6,12 @@ namespace ToggleReplayInfo.Models
     {
         public ReplayMetaDataWrapper(object replayMetaData) : base(replayMetaData)
         {
-
+            if (!replayMetaData.GetType().IsAssignableFrom(Plugin.SSTM.SSTypes.ReplayMetaData))
+                throw new ArgumentException($"Invalid Object of type \"{replayMetaData.GetType()}\" provided to wrapper for \"{thisObjectType}\" ({nameof(ReplayMetaDataWrapper)})!");
         }
 
         public LeaderboardPlayerInfoWrapper LeaderboardPlayerInfo => new LeaderboardPlayerInfoWrapper(Get("leaderboardPlayerInfo"));
-        public int Id => Get<int>("id");
+        public int ReplayId => Get<int>("id");
         public int Rank => Get<int>("rank");
         public int BaseScore => Get<int>("baseScore");
         public int ModifiedScore => Get<int>("modifiedScore");
@@ -36,8 +29,7 @@ namespace ToggleReplayInfo.Models
 
         public override string ToString()
         {
-            return $"[{nameof(ReplayMetaDataWrapper)}] ID: {this.Id} | Rank: {this.Rank} | PP: {this.PP} | TimeSet: {this.TimeSet}";
+            return $"[{nameof(ReplayMetaDataWrapper)}] ID: {this.ReplayId} | Rank: {this.Rank} | PP: {this.PP} | TimeSet: {this.TimeSet}";
         }
-
     }
 }

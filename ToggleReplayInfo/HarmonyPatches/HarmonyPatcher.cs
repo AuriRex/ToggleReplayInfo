@@ -43,15 +43,16 @@ namespace ToggleReplayInfo.HarmonyPatches
         {
             Logger.Log.Debug("Preparing patches ...");
 
-            PatchLevelResultsReplayStartButtonClicker.OnWatchReplayButtonClickedMB = _scoreSaberTypeManager.SSTypes.ScoreSaberLevelResultsViewController
-                .GetMethods(AnyBindingFlags).First(x => {
-                    BeatSaberMarkupLanguage.Attributes.UIAction attribute = x.GetCustomAttribute(typeof(BeatSaberMarkupLanguage.Attributes.UIAction)) as BeatSaberMarkupLanguage.Attributes.UIAction;
-                    if (attribute == null)
+            if(_scoreSaberTypeManager.SSTypes.ScoreSaberLevelResultsViewController != null)
+                PatchLevelResultsReplayStartButtonClicker.OnWatchReplayButtonClickedMB = _scoreSaberTypeManager.SSTypes.ScoreSaberLevelResultsViewController
+                    .GetMethods(AnyBindingFlags).First(x => {
+                        BeatSaberMarkupLanguage.Attributes.UIAction attribute = x.GetCustomAttribute(typeof(BeatSaberMarkupLanguage.Attributes.UIAction)) as BeatSaberMarkupLanguage.Attributes.UIAction;
+                        if (attribute == null)
+                            return false;
+                        if(attribute.id.Equals("replay-click"))
+                            return true;
                         return false;
-                    if(attribute.id.Equals("replay-click"))
-                        return true;
-                    return false;
-                });
+                    });
 
             string ss_ScoreDetailViewTypeName = "ScoreSaber.UI.Elements.Leaderboard.ScoreDetailView";
 

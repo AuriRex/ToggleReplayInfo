@@ -10,7 +10,20 @@ namespace ToggleReplayInfo.HarmonyPatches.Patches
     {
         internal static MethodBase OnWatchReplayButtonClickedMB;
 
-        internal static event Action OnLevelCompletedWatchReplayButtonClicked;
+        private static bool _replayButtonClicked = false;
+        internal static bool LevelCompletedWatchReplayButtonWasClicked
+        {
+            get
+            {
+                var val = _replayButtonClicked;
+                _replayButtonClicked = false;
+                return val;
+            }
+            private set
+            {
+                _replayButtonClicked = value;
+            }
+        }
 
         static MethodBase TargetMethod()
         {
@@ -19,7 +32,7 @@ namespace ToggleReplayInfo.HarmonyPatches.Patches
 
         static void Postfix()
         {
-            OnLevelCompletedWatchReplayButtonClicked?.Invoke();
+            LevelCompletedWatchReplayButtonWasClicked = true;
         }
     }
 #pragma warning restore IDE0051 // Remove unused private members

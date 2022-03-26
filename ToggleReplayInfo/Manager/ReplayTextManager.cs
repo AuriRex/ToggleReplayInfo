@@ -1,9 +1,7 @@
 ﻿using System;
-using System.Collections;
 using System.Threading.Tasks;
+using TMPro;
 using ToggleReplayInfo.Configuration;
-using ToggleReplayInfo.HarmonyPatches;
-using ToggleReplayInfo.HarmonyPatches.Patches;
 using ToggleReplayInfo.Models;
 using UnityEngine;
 using Zenject;
@@ -17,32 +15,38 @@ namespace ToggleReplayInfo.Manager
         private readonly PluginConfig _pluginConfig;
         private readonly ReplayMetaDataWrapper _replayMetaData;
         private readonly IPlatformUserModel _platformUserModel;
+        private readonly bool _isFromResultsViewReplayButton;
 
         [Inject]
-        public ReplayTextManager(PluginConfig pluginConfig, ReplayMetaDataWrapper replayMetaDataWrapper, IPlatformUserModel platformUserModel)
+        public ReplayTextManager(PluginConfig pluginConfig, ReplayMetaDataWrapper replayMetaDataWrapper, IPlatformUserModel platformUserModel, [Inject(Id = "FromResultsViewReplayButton")] bool isFromResultsViewReplayButton)
         {
             _pluginConfig = pluginConfig;
             _replayMetaData = replayMetaDataWrapper;
             _platformUserModel = platformUserModel;
+            _isFromResultsViewReplayButton = isFromResultsViewReplayButton;
         }
 
         public async void Initialize()
         {
-            if (!_pluginConfig.Enabled) return;
-
-            if (_replayMetaData == null) return;
+            bool enable = _isFromResultsViewReplayButton;
 
             // Delay is to wait for the ScoreSaber Replay Text GameObject to get instantiated first
             await Task.Delay(200);
 
-            Logger.Log.Debug($"Replay is playing, Player Id: {this._replayMetaData.LeaderboardPlayerInfo.Id}");
+            if (!enable)
+            {
+                if (_replayMetaData == null) return;
 
-            UserInfo userInfo = await _platformUserModel.GetUserInfo();
+                Logger.Log.Debug($"Replay is playing, Player Id: {this._replayMetaData.LeaderboardPlayerInfo.PlayerId}");
 
+                UserInfo userInfo = await _platformUserModel.GetUserInfo();
 
-            Logger.Log.Debug($"UserInfo:\"{userInfo.platformUserId}\" - MetaData:\"{_replayMetaData.LeaderboardPlayerInfo.Id}\"");
+                Logger.Log.Debug($"UserInfo:\"{userInfo.platformUserId}\" - MetaData:\"{_replayMetaData.LeaderboardPlayerInfo.PlayerId}\"");
 
-            if(userInfo.platformUserId.Equals(_replayMetaData.LeaderboardPlayerInfo.Id))
+                enable = userInfo.platformUserId.Equals(_replayMetaData.LeaderboardPlayerInfo.PlayerId);
+            }
+
+            if(enable)
             {
                 var go = GameObject.Find($"/{SCORESABER_REPLAYTEXT_GAMEOBJECT_NAME}");
 
@@ -70,10 +74,13 @@ namespace ToggleReplayInfo.Manager
                 Logger.Log.Debug("Setting additional replay text values ...");
 
                 parent.transform.position = _pluginConfig.Position.ToVector3();
+                parent.transform.rotation = Quaternion.Euler(_pluginConfig.Rotation.ToVector3());
 
                 go.transform.localScale = go.transform.localScale * _pluginConfig.Scale;
 
-                // TODO: Rotation
+                var tmp = go.GetComponent<TextMeshProUGUI>();
+
+                tmp.color = _pluginConfig.GetColor();
             }
         }
 

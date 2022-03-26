@@ -3,6 +3,7 @@ using System.Collections;
 using System.Reflection;
 using ToggleReplayInfo.Exceptions;
 using ToggleReplayInfo.TypeReflection;
+using ToggleReplayInfo.TypeReflection.Attributes;
 using ToggleReplayInfo.TypeReflection.Core;
 using UnityEngine.UI;
 using Zenject;
@@ -16,8 +17,8 @@ namespace ToggleReplayInfo.Manager
 
         private bool _isReady = false;
 
-        public static bool HasErrorsOnInit { get; private set; } = false;
-        public bool HasErrorsOnInitInstance => HasErrorsOnInit;
+        public static bool HasErrorsOnInitStatic { get; private set; } = false;
+        public bool HasErrorsOnInit => HasErrorsOnInitStatic;
 
         public ScoreSaberTypes SSTypes = new ScoreSaberTypes();
 
@@ -25,15 +26,16 @@ namespace ToggleReplayInfo.Manager
 
         public class ScoreSaberTypes
         {
+            public Type SS_ReplayMetadataContainer { get; internal set; }
             public Type ReplayMetaData { get; internal set; }
             public Type LeaderboardPlayerInfo { get; internal set; }
-            public Type ReplayCoreData { get; internal set; }
-            public Type ScoreSaberReplay { get; internal set; }
-            public Type ScoreSaberReplayContainer { get; internal set; }
-            public Type ScoreSaberLeaderboardScoreEntry { get; internal set; }
-            public Type SS_DifficultyLeaderboardData { get; internal set; }
-            public Type SS_ReplayMetadataContainer { get; internal set; }
             public Type ScoreSaberLevelResultsViewController { get; internal set; }
+
+            /*[IgnoreVerification] public Type ReplayCoreData { get; internal set; }
+            [IgnoreVerification] public Type ScoreSaberReplay { get; internal set; }
+            [IgnoreVerification] public Type ScoreSaberReplayContainer { get; internal set; }
+            [IgnoreVerification] public Type ScoreSaberLeaderboardScoreEntry { get; internal set; }
+            [IgnoreVerification] public Type SS_DifficultyLeaderboardData { get; internal set; }*/
         }
 
         public ScoreSaberTypeManager(TypeDefinitionManager scoreSaberTypeDefinitionManager)
@@ -66,14 +68,14 @@ namespace ToggleReplayInfo.Manager
 
                 PostInitialize();
 
-                HasErrorsOnInit = false;
+                HasErrorsOnInitStatic = false;
             }
             catch(Exception ex)
             {
                 Logger.Log.Error($"{nameof(ScoreSaberTypeManager)} failed: {ex.Message}");
                 Logger.Log.Error($"{ex.StackTrace}");
                 Logger.Log.Error($"Unresolved Types: {_typeDefinitionManager.GetUnresolvedTypes(ScoreSaberAssembly)}");
-                HasErrorsOnInit = true;
+                HasErrorsOnInitStatic = true;
             }
 
             Plugin.SSTM = this;
@@ -113,7 +115,7 @@ namespace ToggleReplayInfo.Manager
                 .BindToProperty(SSTypes, nameof(ScoreSaberTypes.SS_ReplayMetadataContainer))
                 .Register(_typeDefinitionManager, ScoreSaberAssembly);
 
-            var ScoreSaberLeaderboardScoreEntryDef = new TypeDefinition(isSealed: true, definitionName: nameof(ScoreSaberTypes.ScoreSaberLeaderboardScoreEntry))
+            /*var ScoreSaberLeaderboardScoreEntryDef = new TypeDefinition(isSealed: true, definitionName: nameof(ScoreSaberTypes.ScoreSaberLeaderboardScoreEntry))
                 .AddFieldDefinition(ReplayMetaDataDef, MemberVisibility.Private)
                 .AddFieldDefinition(typeof(bool), MemberVisibility.Private)
                 .AddFieldDefinition(typeof(double), MemberVisibility.Private)
@@ -123,9 +125,9 @@ namespace ToggleReplayInfo.Manager
                 .BindToProperty(SSTypes, nameof(ScoreSaberTypes.ScoreSaberLeaderboardScoreEntry))
                 .Register(_typeDefinitionManager, ScoreSaberAssembly);
 
-            /*var ScoreSaberSongInfoDef = new TypeDefinition(definitionName: nameof(ScoreSaberSongInfo))
+            *//*var ScoreSaberSongInfoDef = new TypeDefinition(definitionName: nameof(ScoreSaberSongInfo))
                 .BindToProperty(this, nameof(ScoreSaberSongInfo))
-                .Register(_typeDefinitionManager, ScoreSaberAssembly);*/
+                .Register(_typeDefinitionManager, ScoreSaberAssembly);*//*
 
             var ReplayCoreDataDef = new TypeDefinition(definitionName: nameof(ScoreSaberTypes.ReplayCoreData))
                 .AddMultipleSameFieldDefinitions(4, typeof(string), MemberVisibility.Assembly)
@@ -159,7 +161,7 @@ namespace ToggleReplayInfo.Manager
                 .AddFieldDefinition(typeof(IDifficultyBeatmap), MemberVisibility.Assembly)
                 .AddFieldDefinition(typeof(GameplayModifiers), MemberVisibility.Assembly)
                 .BindToProperty(SSTypes, nameof(ScoreSaberTypes.ScoreSaberReplayContainer))
-                .Register(_typeDefinitionManager, ScoreSaberAssembly);
+                .Register(_typeDefinitionManager, ScoreSaberAssembly);*/
 
             var ScoreSaberLevelResultsViewControllerDef = new TypeDefinition(MemberVisibility.Assembly, isSealed: true, definitionName: nameof(ScoreSaberTypes.ScoreSaberLevelResultsViewController))
                 .AddFieldDefinition(typeof(ResultsViewController), MemberVisibility.Private)

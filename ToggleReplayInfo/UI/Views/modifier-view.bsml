@@ -1,17 +1,58 @@
-﻿<horizontal horizontal-fit='PreferredSize' vertical-fit='PreferredSize' xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' xsi:schemaLocation='https://monkeymanboy.github.io/BSML-Docs/ https://raw.githubusercontent.com/monkeymanboy/BSML-Docs/gh-pages/BSMLSchema.xsd'>
-  <vertical>
-    <vertical>
-      <text text='~status-text' align='Center' color='red' />
+﻿<bg horizontal-fit='PreferredSize' vertical-fit='PreferredSize' xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' xsi:schemaLocation='https://monkeymanboy.github.io/BSML-Docs/ https://raw.githubusercontent.com/monkeymanboy/BSML-Docs/gh-pages/BSMLSchema.xsd'>
+	<modal id='are-you-sure-modal-root' size-delta-x='50' size-delta-y='30' show-event='show-ays-modal' hide-event='hide-ays-modal' clickerino-offerino-closerino='true'>
+		<horizontal size-delta-x='50' size-delta-y='30' pref-width='50' pad='2' pref-height='30' horizontal-fit='PreferredSize' vertical-fit='PreferredSize'>
+			<vertical>
+				<text text='&lt;b&gt;Reset all values to default ones?' color='red' rich-text='true' />
+				<horizontal>
+					<button text='YES' on-click='reset-values-for-real' color='green' />
+					<button text='NO' click-event='hide-ays-modal' color='red' />
+				</horizontal>
+			</vertical>
+		</horizontal>
+	</modal>
+	
+	<tab-selector tab-tag='tri-tab' size-delta-y='7' anchor-pos-y='10' anchor-pos-x='-45' />
+	<vertical size-delta-y='20' preferred-height='20' anchor-pos-y='20'>
+		<text text='~status-text' align='Center' color='red' />
+        <vertical>
+			<toggle-setting id='enable-mod-component' text='Enabled' value='enable-mod' apply-on-change='true' bind-value='true' hover-hint='Enables the features below.'/>
+			<toggle-setting id='disable-replay-text-component' text='Hide Replay Text' value='disable-replay-text' apply-on-change='true' bind-value='true' hover-hint='Whether to hide the text altogether.' interactable='false'/>
+		</vertical>
+        <bg size-delta-y='60'>
+			<tab tags='tri-tab' tab-name='Color' anchor-pos-y='-16'>
+				<horizontal>
+					<vertical>
+						<color-setting id='text-color-component' text='Text Color' value='base-text-color' apply-on-change='true' bind-value='true' hover-hint='Change the color!' interactable='false' />
+						<slider-setting id='text-alpha-component' text='Text Alpha' value='base-text-alpha' increment='0.1' min='0' max='1' integer-only='false' apply-on-change='true' bind-value='true' hover-hint='&lt;- Transparent/Opaque -&gt;' interactable='false' />
+					</vertical>
+				</horizontal>
+			</tab>
+			<tab tags='tri-tab' tab-name='Position' anchor-pos-y='-22'>
+				<horizontal>
+					<vertical>
+						<string-setting id='position-x-component' text='Position X' value='position-x' apply-on-change='true' bind-value='true' hover-hint='- Left/Right +' interactable='false' />
+						<string-setting id='position-y-component' text='Position Y' value='position-y' apply-on-change='true' bind-value='true' hover-hint='- Down/Up +' interactable='false' />
+						<string-setting id='position-z-component' text='Position Z' value='position-z' apply-on-change='true' bind-value='true' hover-hint='- Front/Back +' interactable='false' />
+						<slider-setting id='scale-component' text='Scale' value='scale' apply-on-change='true' bind-value='true' hover-hint='Scales the entire text.' min='0.2' max='3' increment='0.1' interactable='false' />
+					</vertical>
+				</horizontal>
+			</tab>
+			<tab tags='tri-tab' tab-name='Rotation' anchor-pos-y='-18'>
+				<horizontal>
+					<vertical>
+						<string-setting id='rotation-x-component' text='Rotation X' value='rotation-x' apply-on-change='true' bind-value='true' hover-hint='Rotate - Down / Up +' interactable='false' />
+						<string-setting id='rotation-y-component' text='Rotation Y' value='rotation-y' apply-on-change='true' bind-value='true' hover-hint='Rotate around the player' interactable='false' />
+						<string-setting id='rotation-z-component' text='Rotation Z' value='rotation-z' apply-on-change='true' bind-value='true' hover-hint='Tilt - Right / Left +' interactable='false' />
+					</vertical>
+				</horizontal>
+			</tab>
+			<tab tags='tri-tab' tab-name='Other' anchor-pos-y='-18'>
+				<horizontal>
+					<vertical>
+						<button id='reset-button' text='Reset Values' click-event='show-ays-modal' />
+					</vertical>
+				</horizontal>
+			</tab>
+		</bg>
     </vertical>
-    <vertical>
-      <toggle-setting id='enable-mod-component' text='Enabled' value='enable-mod' apply-on-change='true' hover-hint='Enables the features below.'/>
-    </vertical>
-    <vertical>
-      <toggle-setting id='disable-replay-text-component' text='Hide Replay Text' value='disable-replay-text' apply-on-change='true' hover-hint='Whether to hide the text altogether.' interactable='false'/>
-      <string-setting id='position-x-component' text='Position X' value='position-x' apply-on-change='true' hover-hint='- Left/Right +' interactable='false' />
-      <string-setting id='position-y-component' text='Position Y' value='position-y' apply-on-change='true' hover-hint='- Down/Up +' interactable='false' />
-      <string-setting id='position-z-component' text='Position Z' value='position-z' apply-on-change='true' hover-hint='- Front/Back +' interactable='false' />
-      <slider-setting id='scale-component' text='Scale' value='scale' apply-on-change='true' hover-hint='Scales the entire text.' min='0.2' max='3' increment='0.1' interactable='false' />
-    </vertical>
-  </vertical>
-</horizontal>
+</bg>

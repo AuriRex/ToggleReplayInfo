@@ -1,10 +1,15 @@
 ﻿using BeatSaberMarkupLanguage.Attributes;
+using BeatSaberMarkupLanguage.Components;
 using BeatSaberMarkupLanguage.Components.Settings;
+using BeatSaberMarkupLanguage.Parser;
+using HMUI;
 using System;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using ToggleReplayInfo.Configuration;
 using ToggleReplayInfo.Manager;
+using UnityEngine;
+using UnityEngine.UI;
 using Zenject;
 
 namespace ToggleReplayInfo.UI
@@ -30,6 +35,9 @@ namespace ToggleReplayInfo.UI
             _statusText = $"This only affects <u>your</u> replays, <color=purple>{userInfo.userName}</color>!";
         }
 
+        [UIParams]
+        protected BSMLParserParams parserParams = null!;
+
         private string _statusText = "This only affects your replays!";
         [UIValue("status-text")]
         public string StatusText
@@ -38,7 +46,7 @@ namespace ToggleReplayInfo.UI
             set
             {
                 _statusText = value;
-                NotifyPropertyChanged(nameof(StatusText));
+                NotifyPropertyChanged();
             }
         }
 
@@ -49,7 +57,7 @@ namespace ToggleReplayInfo.UI
             set
             {
                 _pluginConfig.Enabled = value;
-                NotifyPropertyChanged(nameof(EnableMod));
+                NotifyPropertyChanged();
                 OnPluginEnabledStateChanged(value);
             }
         }
@@ -61,7 +69,29 @@ namespace ToggleReplayInfo.UI
             set
             {
                 _pluginConfig.HideReplayInfo = value;
-                NotifyPropertyChanged(nameof(HideReplayInfo));
+                NotifyPropertyChanged();
+            }
+        }
+
+        [UIValue("base-text-color")]
+        protected Color BaseTextColor
+        {
+            get => _pluginConfig.GetColor();
+            set
+            {
+                _pluginConfig.SetColor(value);
+                NotifyPropertyChanged();
+            }
+        }
+
+        [UIValue("base-text-alpha")]
+        protected float BaseTextAlpha
+        {
+            get => _pluginConfig.GetColor().a;
+            set
+            {
+                _pluginConfig.SetColor(_pluginConfig.GetColor().ColorWithAlpha(value));
+                NotifyPropertyChanged();
             }
         }
 
@@ -75,7 +105,7 @@ namespace ToggleReplayInfo.UI
                 {
                     var val = float.Parse(value);
                     _pluginConfig.Position.X = val;
-                    NotifyPropertyChanged(nameof(PositionX));
+                    NotifyPropertyChanged();
                 }
                 catch(Exception) { }
             }
@@ -91,7 +121,7 @@ namespace ToggleReplayInfo.UI
                 {
                     var val = float.Parse(value);
                     _pluginConfig.Position.Y = val;
-                    NotifyPropertyChanged(nameof(PositionY));
+                    NotifyPropertyChanged();
                 }
                 catch (Exception) { }
             }
@@ -107,7 +137,7 @@ namespace ToggleReplayInfo.UI
                 {
                     var val = float.Parse(value);
                     _pluginConfig.Position.Z = val;
-                    NotifyPropertyChanged(nameof(PositionZ));
+                    NotifyPropertyChanged();
                 }
                 catch (Exception) { }
             }
@@ -120,7 +150,55 @@ namespace ToggleReplayInfo.UI
             set
             {
                 _pluginConfig.Scale = value;
-                NotifyPropertyChanged(nameof(Scale));
+                NotifyPropertyChanged();
+            }
+        }
+
+        [UIValue("rotation-x")]
+        protected string RotationX
+        {
+            get => _pluginConfig.Rotation.X.ToString();
+            set
+            {
+                try
+                {
+                    var val = float.Parse(value);
+                    _pluginConfig.Rotation.X = val;
+                    NotifyPropertyChanged();
+                }
+                catch (Exception) { }
+            }
+        }
+
+        [UIValue("rotation-y")]
+        protected string RotationY
+        {
+            get => _pluginConfig.Rotation.Y.ToString();
+            set
+            {
+                try
+                {
+                    var val = float.Parse(value);
+                    _pluginConfig.Rotation.Y = val;
+                    NotifyPropertyChanged();
+                }
+                catch (Exception) { }
+            }
+        }
+
+        [UIValue("rotation-z")]
+        protected string RotationZ
+        {
+            get => _pluginConfig.Rotation.Z.ToString();
+            set
+            {
+                try
+                {
+                    var val = float.Parse(value);
+                    _pluginConfig.Rotation.Z = val;
+                    NotifyPropertyChanged();
+                }
+                catch (Exception) { }
             }
         }
 
@@ -128,6 +206,10 @@ namespace ToggleReplayInfo.UI
         protected ToggleSetting enableModComponent = null!;
         [UIComponent("disable-replay-text-component")]
         protected ToggleSetting disableReplayTextSetting = null!;
+        [UIComponent("text-color-component")]
+        protected ColorSetting baseTextColorComponent = null!;
+        [UIComponent("text-alpha-component")]
+        protected SliderSetting baseTextAlphaComponent = null!;
         [UIComponent("position-x-component")]
         protected StringSetting positionXComponent = null!;
         [UIComponent("position-y-component")]
@@ -136,11 +218,19 @@ namespace ToggleReplayInfo.UI
         protected StringSetting positionZComponent = null!;
         [UIComponent("scale-component")]
         protected SliderSetting sliderComponent = null!;
+        [UIComponent("rotation-x-component")]
+        protected StringSetting rotationXComponent = null!;
+        [UIComponent("rotation-y-component")]
+        protected StringSetting rotationYComponent = null!;
+        [UIComponent("rotation-z-component")]
+        protected StringSetting rotationZComponent = null!;
+        [UIComponent("reset-button")]
+        protected Button resetButtonComponent = null!;
 
         [UIAction("#post-parse")]
         public void PostParse()
         {
-            if(_scoreSaberTypeManager.HasErrorsOnInitInstance)
+            if(_scoreSaberTypeManager.HasErrorsOnInit)
             {
                 enableModComponent.interactable = false;
                 OnPluginEnabledStateChanged(false);
@@ -155,10 +245,35 @@ namespace ToggleReplayInfo.UI
         private void OnPluginEnabledStateChanged(bool state)
         {
             disableReplayTextSetting.interactable = state;
+            baseTextColorComponent.interactable = state;
+            baseTextAlphaComponent.interactable = state;
             positionXComponent.interactable = state;
             positionYComponent.interactable = state;
             positionZComponent.interactable = state;
             sliderComponent.interactable = state;
+            rotationXComponent.interactable = state;
+            rotationYComponent.interactable = state;
+            rotationZComponent.interactable = state;
+            resetButtonComponent.interactable = state;
+        }
+
+        [UIAction("reset-values-for-real")]
+        private void OnResetValuesForReal()
+        {
+            Logger.Log.Info("Resetting values to their defaults!");
+
+            parserParams.EmitEvent("hide-ays-modal");
+
+            BaseTextColor = Color.white;
+            BaseTextAlpha = 1f;
+            _pluginConfig.Position = PluginConfig.Vector3S.Default();
+            NotifyPropertyChanged(nameof(PositionX));
+            NotifyPropertyChanged(nameof(PositionY));
+            NotifyPropertyChanged(nameof(PositionZ));
+            RotationX = 0.ToString();
+            RotationY = 0.ToString();
+            RotationZ = 0.ToString();
+            Scale = 1f;
         }
 
 #nullable enable annotations

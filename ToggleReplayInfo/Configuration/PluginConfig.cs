@@ -1,5 +1,6 @@
 ﻿using IPA.Config.Stores;
-using System;
+using IPA.Config.Stores.Attributes;
+using IPA.Config.Stores.Converters;
 using System.Runtime.CompilerServices;
 using UnityEngine;
 
@@ -11,12 +12,26 @@ namespace ToggleReplayInfo.Configuration
         public virtual bool Enabled { get; set; } = true;
         public virtual bool HideReplayInfo { get; set; } = true;
 
+        [UseConverter(typeof(HexColorConverter))]
+        public virtual Color TextColor { get; set; } = Color.white;
+        public virtual float TextAlpha { get; set; } = 1f;
+
         public virtual Vector3S Position { get; set; } = Vector3S.Default();
 
         public virtual float Scale { get; set; } = 1f;
 
         public virtual Vector3S Rotation { get; set; } = new Vector3S();
 
+        public void SetColor(Color col)
+        {
+            TextColor = col;
+            TextAlpha = col.a;
+        }
+
+        public Color GetColor()
+        {
+            return TextColor.ColorWithAlpha(TextAlpha);
+        }
 
         public class Vector3S
         {
