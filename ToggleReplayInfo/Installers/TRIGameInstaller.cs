@@ -22,8 +22,8 @@ namespace ToggleReplayInfo.Installers
             if (_scoreSaberTypeManager.HasErrorsOnInit) return;
             if (!_pluginConfig.Enabled) return;
 
-            Container.Bind<bool>().WithId("FromResultsViewReplayButton").FromInstance(PatchLevelResultsReplayStartButtonClicker.LevelCompletedWatchReplayButtonWasClicked).AsSingle();
-            Container.BindInterfacesAndSelfTo<ReplayMetaDataWrapper>().FromInstance(PatchScoreDetailView.ReplayMetaData).AsSingle();
+            Container.Bind<bool>().WithId("FromResultsViewReplayButton").FromInstance(PatchResultsViewReplayButtonController.LevelCompletedWatchReplayButtonWasClicked).AsSingle();
+            Container.BindInterfacesAndSelfTo<ReplayScoreWrapper>().FromInstance(PatchScoreDetailView.Score).AsSingle();
             Container.BindInterfacesAndSelfTo<ReplayTextManager>().AsSingle();
         }
     }

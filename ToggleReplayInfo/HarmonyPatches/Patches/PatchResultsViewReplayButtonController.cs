@@ -1,14 +1,12 @@
 ﻿using HarmonyLib;
-using System;
 using System.Reflection;
 
 namespace ToggleReplayInfo.HarmonyPatches.Patches
 {
-#pragma warning disable IDE0051 // Remove unused private members
     [HarmonyPatch]
-    internal class PatchLevelResultsReplayStartButtonClicker
+    internal class PatchResultsViewReplayButtonController
     {
-        internal static MethodBase OnWatchReplayButtonClickedMB;
+        internal static MethodBase MB_OnWatchReplayButtonClicked;
 
         private static bool _replayButtonClicked = false;
         internal static bool LevelCompletedWatchReplayButtonWasClicked
@@ -25,15 +23,14 @@ namespace ToggleReplayInfo.HarmonyPatches.Patches
             }
         }
 
-        static MethodBase TargetMethod()
+        public static MethodBase TargetMethod()
         {
-            return OnWatchReplayButtonClickedMB;
+            return MB_OnWatchReplayButtonClicked;
         }
 
-        static void Postfix()
+        public static void Postfix()
         {
             LevelCompletedWatchReplayButtonWasClicked = true;
         }
     }
-#pragma warning restore IDE0051 // Remove unused private members
 }

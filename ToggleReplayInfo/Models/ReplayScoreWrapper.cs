@@ -2,15 +2,15 @@
 
 namespace ToggleReplayInfo.Models
 {
-    public class ReplayMetaDataWrapper : TypeReflection.Wrappers.JsonPropertyWrapper
+    public class ReplayScoreWrapper : TypeReflection.Wrappers.JsonPropertyWrapper
     {
-        public ReplayMetaDataWrapper(object replayMetaData) : base(replayMetaData)
+        public ReplayScoreWrapper(object replayMetaData) : base(replayMetaData)
         {
-            if (!replayMetaData.GetType().IsAssignableFrom(Plugin.SSTM.SSTypes.ReplayMetaData))
-                throw new ArgumentException($"Invalid Object of type \"{replayMetaData.GetType()}\" provided to wrapper for \"{thisObjectType}\" ({nameof(ReplayMetaDataWrapper)})!");
+            if (!replayMetaData.GetType().IsAssignableFrom(Plugin.SSTM.SSTypes.Score))
+                throw new ArgumentException($"Invalid Object of type \"{replayMetaData.GetType()}\" provided to wrapper for \"{thisObjectType}\" ({nameof(ReplayScoreWrapper)})!");
         }
 
-        public LeaderboardPlayerInfoWrapper LeaderboardPlayerInfo => new LeaderboardPlayerInfoWrapper(Get("leaderboardPlayerInfo"));
+        public LeaderboardPlayerWrapper LeaderboardPlayerInfo => new LeaderboardPlayerWrapper(Get("leaderboardPlayerInfo"));
         public int ReplayId => Get<int>("id");
         public int Rank => Get<int>("rank");
         public int BaseScore => Get<int>("baseScore");
@@ -29,7 +29,7 @@ namespace ToggleReplayInfo.Models
 
         public override string ToString()
         {
-            return $"[{nameof(ReplayMetaDataWrapper)}] ID: {this.ReplayId} | Rank: {this.Rank} | PP: {this.PP} | TimeSet: {this.TimeSet}";
+            return $"[{nameof(ReplayScoreWrapper)}] ID: {this.ReplayId} | Rank: {this.Rank} | PP: {this.PP} | TimeSet: {this.TimeSet}";
         }
     }
 }

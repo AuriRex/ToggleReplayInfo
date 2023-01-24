@@ -13,12 +13,12 @@ namespace ToggleReplayInfo.Manager
         public const string SCORESABER_REPLAYTEXT_GAMEOBJECT_NAME = "InGameReplayUI/CustomUIText-ScoreSaber";
 
         private readonly PluginConfig _pluginConfig;
-        private readonly ReplayMetaDataWrapper _replayMetaData;
+        private readonly ReplayScoreWrapper _replayMetaData;
         private readonly IPlatformUserModel _platformUserModel;
         private readonly bool _isFromResultsViewReplayButton;
 
         [Inject]
-        public ReplayTextManager(PluginConfig pluginConfig, ReplayMetaDataWrapper replayMetaDataWrapper, IPlatformUserModel platformUserModel, [Inject(Id = "FromResultsViewReplayButton")] bool isFromResultsViewReplayButton)
+        public ReplayTextManager(PluginConfig pluginConfig, ReplayScoreWrapper replayMetaDataWrapper, IPlatformUserModel platformUserModel, [Inject(Id = "FromResultsViewReplayButton")] bool isFromResultsViewReplayButton)
         {
             _pluginConfig = pluginConfig;
             _replayMetaData = replayMetaDataWrapper;

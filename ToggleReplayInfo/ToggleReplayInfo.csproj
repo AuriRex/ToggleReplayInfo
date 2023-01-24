@@ -142,11 +142,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="HarmonyPatches\HarmonyPatcher.cs" />
-    <Compile Include="HarmonyPatches\Patches\PatchLevelResultsReplayStartButtonClicker.cs" />
+    <Compile Include="HarmonyPatches\Patches\PatchResultsViewReplayButtonController.cs" />
     <Compile Include="HarmonyPatches\Patches\PatchScoreDetailView.cs" />
     <Compile Include="Models\DifficultyLeaderboardDataWrapper.cs" />
-    <Compile Include="Models\LeaderboardPlayerInfoWrapper.cs" />
-    <Compile Include="Models\ReplayMetadataContainerWrapper.cs" />
+    <Compile Include="Models\LeaderboardPlayerWrapper.cs" />
+    <Compile Include="Models\ReplayScoreMapWrapper.cs" />
     <Compile Include="TypeReflection\Attributes\IgnoreVerification.cs" />
     <Compile Include="Exceptions\ReplayTextInitializationException.cs" />
     <Compile Include="Exceptions\TypeNotResolvableException.cs" />
@@ -166,7 +166,7 @@
     <Compile Include="TypeReflection\Core\TypeDefinition.cs" />
     <Compile Include="TypeReflection\Core\TypeDefinitionManager.cs" />
     <Compile Include="Manager\ScoreSaberTypeManager.cs" />
-    <Compile Include="Models\ReplayMetaDataWrapper.cs" />
+    <Compile Include="Models\ReplayScoreWrapper.cs" />
     <Compile Include="Plugin.cs" />
     <Compile Include="Logger.cs" />
     <Compile Include="Configuration\PluginConfig.cs" />

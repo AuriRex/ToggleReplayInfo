@@ -1,6 +1,5 @@
 ﻿using ToggleReplayInfo.Configuration;
 using ToggleReplayInfo.Manager;
-using ToggleReplayInfo.TypeReflection.Core;
 using Zenject;
 
 namespace ToggleReplayInfo.Installers
@@ -17,7 +16,6 @@ namespace ToggleReplayInfo.Installers
         public override void InstallBindings()
         {
             Container.Bind<PluginConfig>().FromInstance(_pluginConfig).AsSingle();
-            Container.Bind<TypeDefinitionManager>().ToSelf().AsSingle();
             Container.BindInterfacesAndSelfTo<ScoreSaberTypeManager>().AsSingle();
             Container.BindInterfacesAndSelfTo<HarmonyPatches.HarmonyPatcher>().AsSingle();
         }

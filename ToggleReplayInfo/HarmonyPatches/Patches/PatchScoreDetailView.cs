@@ -4,15 +4,14 @@ using ToggleReplayInfo.Models;
 
 namespace ToggleReplayInfo.HarmonyPatches.Patches
 {
-#pragma warning disable IDE0051 // Remove unused private members
     [HarmonyPatch]
     internal class PatchScoreDetailView
     {
-        internal static PropertyInfo _currentScorePI;
-        internal static MethodBase ReplayButtonClickedMB;
+        internal static PropertyInfo PI__currentScore;
+        internal static MethodBase MB_ReplayButtonClicked;
 
-        private static ReplayMetaDataWrapper _replayMetaData;
-        internal static ReplayMetaDataWrapper ReplayMetaData
+        private static ReplayScoreWrapper _replayMetaData;
+        internal static ReplayScoreWrapper Score
         {
             get
             {
@@ -26,22 +25,20 @@ namespace ToggleReplayInfo.HarmonyPatches.Patches
             }
         }
 
-        static MethodBase TargetMethod()
+        public static MethodBase TargetMethod()
         {
-            return ReplayButtonClickedMB;
+            return MB_ReplayButtonClicked;
         }
 
-        static void Postfix(object __instance)
+        public static void Postfix(object __instance)
         {
             Logger.Log.Debug("Replay was started.");
 
-            var val = _currentScorePI.GetValue(__instance);
+            var val = PI__currentScore.GetValue(__instance);
             if(val != null)
             {
-                ReplayMetaData = new ReplayMetadataContainerWrapper(val)?.ReplayMetaData;
+                Score = new ReplayScoreMapWrapper(val)?.Score;
             }
         }
-
     }
-#pragma warning restore IDE0051 // Remove unused private members
 }

@@ -2,12 +2,12 @@
 
 namespace ToggleReplayInfo.Models
 {
-    public class LeaderboardPlayerInfoWrapper : TypeReflection.Wrappers.JsonPropertyWrapper
+    public class LeaderboardPlayerWrapper : TypeReflection.Wrappers.JsonPropertyWrapper
     {
-        public LeaderboardPlayerInfoWrapper(object wrappedObject) : base(wrappedObject)
+        public LeaderboardPlayerWrapper(object wrappedObject) : base(wrappedObject)
         {
             if (!wrappedObject.GetType().IsAssignableFrom(Plugin.SSTM.SSTypes.LeaderboardPlayerInfo))
-                throw new ArgumentException($"Invalid Object of type \"{wrappedObject.GetType()}\" provided to wrapper for \"{thisObjectType}\" ({nameof(LeaderboardPlayerInfoWrapper)})!");
+                throw new ArgumentException($"Invalid Object of type \"{wrappedObject.GetType()}\" provided to wrapper for \"{thisObjectType}\" ({nameof(LeaderboardPlayerWrapper)})!");
         }
 
         public string PlayerId => Get<string>("id");

@@ -43,8 +43,8 @@ namespace ToggleReplayInfo.HarmonyPatches
         {
             Logger.Log.Debug("Preparing patches ...");
 
-            if(_scoreSaberTypeManager.SSTypes.ScoreSaberLevelResultsViewController != null)
-                PatchLevelResultsReplayStartButtonClicker.OnWatchReplayButtonClickedMB = _scoreSaberTypeManager.SSTypes.ScoreSaberLevelResultsViewController
+            if(_scoreSaberTypeManager.SSTypes.ResultsViewReplayButtonController != null)
+                PatchResultsViewReplayButtonController.MB_OnWatchReplayButtonClicked = _scoreSaberTypeManager.SSTypes.ResultsViewReplayButtonController
                     .GetMethods(AnyBindingFlags).First(x => {
                         BeatSaberMarkupLanguage.Attributes.UIAction attribute = x.GetCustomAttribute(typeof(BeatSaberMarkupLanguage.Attributes.UIAction)) as BeatSaberMarkupLanguage.Attributes.UIAction;
                         if (attribute == null)
@@ -59,8 +59,8 @@ namespace ToggleReplayInfo.HarmonyPatches
             var ss_ScoreDetailViewType = _scoreSaberTypeManager.ScoreSaberAssembly
                 .GetType(ss_ScoreDetailViewTypeName);
 
-            PatchScoreDetailView.ReplayButtonClickedMB = ss_ScoreDetailViewType.GetMethod("ReplayClicked", AnyBindingFlags);
-            PatchScoreDetailView._currentScorePI = ss_ScoreDetailViewType.GetProperty("_currentScore", AnyBindingFlags);
+            PatchScoreDetailView.MB_ReplayButtonClicked = ss_ScoreDetailViewType.GetMethod("ReplayClicked", AnyBindingFlags);
+            PatchScoreDetailView.PI__currentScore = ss_ScoreDetailViewType.GetProperty("_currentScore", AnyBindingFlags);
         }
 
         private void Patch()
