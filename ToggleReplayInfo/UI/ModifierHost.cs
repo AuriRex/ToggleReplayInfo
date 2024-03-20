@@ -6,6 +6,7 @@ using HMUI;
 using System;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using System.Threading;
 using ToggleReplayInfo.Configuration;
 using ToggleReplayInfo.Manager;
 using UnityEngine;
@@ -30,7 +31,8 @@ namespace ToggleReplayInfo.UI
 
         public async void Initialize()
         {
-            var userInfo = await _platformUserModel.GetUserInfo();
+            var ctx = new CancellationToken();
+            var userInfo = await _platformUserModel.GetUserInfo(ctx);
 
             _statusText = $"This only affects <u>your</u> replays, <color=purple>{userInfo.userName}</color>!";
         }
@@ -90,7 +92,9 @@ namespace ToggleReplayInfo.UI
             get => _pluginConfig.GetColor().a;
             set
             {
-                _pluginConfig.SetColor(_pluginConfig.GetColor().ColorWithAlpha(value));
+                var col = _pluginConfig.GetColor();
+                col = new Color(col.r, col.g, col.b, value);
+                _pluginConfig.SetColor(col);
                 NotifyPropertyChanged();
             }
         }

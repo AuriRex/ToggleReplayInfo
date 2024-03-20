@@ -30,7 +30,7 @@ namespace ToggleReplayInfo.Configuration
 
         public Color GetColor()
         {
-            return TextColor.ColorWithAlpha(TextAlpha);
+            return new Color(TextColor.r, TextColor.g, TextColor.b, TextAlpha);
         }
 
         public class Vector3S

@@ -20,7 +20,7 @@ namespace ToggleReplayInfo
 
             zenjector.Install<TRICoreInstaller>(Location.App, conf.Generated<Configuration.PluginConfig>());
             zenjector.Install<TRIMenuInstaller>(Location.Menu);
-            zenjector.Install<TRIGameInstaller>(Location.Singleplayer);
+            zenjector.Install<TRIGameInstaller>(Location.StandardPlayer);
         }
 
         internal static ScoreSaberTypeManager SSTM { get; set; }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using TMPro;
 using ToggleReplayInfo.Configuration;
@@ -39,7 +40,8 @@ namespace ToggleReplayInfo.Manager
 
                 Logger.Log.Debug($"Replay is playing, Player Id: {this._replayMetaData.LeaderboardPlayerInfo.PlayerId}");
 
-                UserInfo userInfo = await _platformUserModel.GetUserInfo();
+                var ctx = new CancellationToken();
+                UserInfo userInfo = await _platformUserModel.GetUserInfo(ctx);
 
                 Logger.Log.Debug($"UserInfo:\"{userInfo.platformUserId}\" - MetaData:\"{_replayMetaData.LeaderboardPlayerInfo.PlayerId}\"");
 

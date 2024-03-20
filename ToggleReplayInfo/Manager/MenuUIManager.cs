@@ -19,11 +19,7 @@ namespace ToggleReplayInfo.Manager
 
         public void Dispose()
         {
-            if (GameplaySetup.IsSingletonAvailable)
-            {
-                GameplaySetup.instance.RemoveTab("Replay Text");
-            }
+            GameplaySetup.instance.RemoveTab("Replay Text");
         }
-
     }
 }
